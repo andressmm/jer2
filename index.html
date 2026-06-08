@@ -118,8 +118,8 @@
           <i class="ti ti-users"></i>
         </div>
         <div class="action-text">
-          <p class="action-title">Mis contactos</p>
-          <p class="action-desc">Revisá tu lista de contactos</p>
+          <p class="action-title">Mis contactos / Oraciones</p>
+          <p class="action-desc">Lista de contactos / Carga de oraciones</p>
         </div>
         <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
       </button>
@@ -134,6 +134,21 @@
         </div>
         <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
       </button>
+
+
+
+         <button class="action-card card-purple" onclick="showScreen('crecimiento')">
+        <div class="action-icon ic-purple">
+          <i class="ti ti-plant-2"></i>
+        </div>
+        <div class="action-text">
+          <p class="action-title">Crecimiento</p>
+          <p class="action-desc">Seguí el progreso espiritual de tus contactos</p>
+        </div>
+        <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
+      </button>
+
+
     </div>
   </div>
 
@@ -171,7 +186,7 @@
         <div class="field-row">
           <span class="field-label">Contacto</span>
           <div class="contact-toggle">
-            <button class="contact-btn active" onclick="toggleContact(this)">WhatsApp</button>
+            <button class="contact-btn" onclick="toggleContact(this)">WhatsApp</button>
             <button class="contact-btn" onclick="toggleContact(this)">Llamada</button>
           </div>
         </div>
@@ -201,7 +216,7 @@
 <div class="field-row">
   <span class="field-label-wide">¿Quiere visita?</span>
   <div class="toggle-group" id="visita-group">
-    <button class="toggle-btn active" onclick="selectTipo(this)">Sí</button>
+    <button class="toggle-btn" onclick="selectTipo(this)">Sí</button>
     <button class="toggle-btn" onclick="selectTipo(this)">No</button>
   </div>
 </div>
@@ -209,11 +224,27 @@
 <div class="field-row">
   <span class="field-label-wide">¿Casa de paz?</span>
   <div class="toggle-group" id="casadepaz-group">
-    <button class="toggle-btn active" onclick="selectTipo(this)">Sí</button>
+    <button class="toggle-btn" onclick="selectTipo(this)">Sí</button>
     <button class="toggle-btn" onclick="selectTipo(this)">No</button>
   </div>
 </div>
 
+
+</div>
+
+
+
+<!-- DECISION DE FE -->
+<div class="form-section">
+  <p class="form-section-title">Decisión</p>
+
+  <div class="field-row">
+    <div class="toggle-group" id="decision-group">
+      <button class="toggle-btn active" onclick="selectTipo(this)">Ninguna</button>
+      <button class="toggle-btn" onclick="selectTipo(this)">Decisión de fe</button>
+      <button class="toggle-btn" onclick="selectTipo(this)">Reconciliación</button>
+    </div>
+  </div>
 
 </div>
 
@@ -230,7 +261,7 @@
         <p class="form-section-title">Tipo de persona</p>
         <div class="field-row">
           <div class="toggle-group" id="tipo-group">
-            <button class="toggle-btn active" onclick="selectTipo(this)">Adulto</button>
+            <button class="toggle-btn" onclick="selectTipo(this)">Adulto</button>
             <button class="toggle-btn" onclick="selectTipo(this)">Joven</button>
             <button class="toggle-btn" onclick="selectTipo(this)">Adolescente</button>
             <button class="toggle-btn" onclick="selectTipo(this)">Niño</button>
@@ -543,19 +574,19 @@
       </div>
 
       <!-- Fecha y hora -->
-      <div class="oracion-group" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
-        <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);">Fecha y hora de la visita o contacto</p>
-        <div style="display:flex;gap:10px;">
-          <div style="flex:1;">
-            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Fecha</p>
-            <input class="field-input seg-input" id="seg-fecha" type="date">
-          </div>
-          <div style="flex:1;">
-            <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Hora</p>
-            <input class="field-input seg-input" id="seg-hora" type="time">
-          </div>
-        </div>
-      </div>
+ <div class="oracion-group" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+  <p style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);">Fecha y hora de la visita o contacto</p>
+  <div style="display:flex;gap:10px;">
+    <div style="flex:1;min-width:0;">
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Fecha</p>
+      <input class="field-input seg-input" id="seg-fecha" type="date">
+    </div>
+    <div style="flex:1;min-width:0;">
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">Hora</p>
+      <input class="field-input seg-input" id="seg-hora" type="time">
+    </div>
+  </div>
+</div>
 
       <!-- Observaciones -->
       <div class="oracion-group" style="padding:14px 16px;">
