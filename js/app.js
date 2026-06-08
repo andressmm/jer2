@@ -327,7 +327,10 @@ fetch(BASE_URL +"/verificartroquel.php?nombre=" + encodeURIComponent(nombreVal) 
       formData.append("observaciones", document.getElementById("f-observaciones") ? document.getElementById("f-observaciones").value.trim() : "");
       formData.append("edad",          document.querySelector("#tipo-group .toggle-btn.active").textContent.trim());
       formData.append("visita",        visitaVal);
+      
 formData.append("casadepaz", casadepazVal);
+formData.append("decision", document.querySelector("#decision-group .toggle-btn.active").textContent.trim());
+
 
       const user = getUser();
       formData.append("dataentry", user?.dni || "");
@@ -564,6 +567,8 @@ function showDetalle(id) {
       let c        = d.data;
       let nombre   = (c.nombre   || "").trim();
       let apellido = (c.apellido || "").trim();
+      let decision = (c.decision || "").trim();
+
       let fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
       let initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
 
@@ -605,6 +610,8 @@ function showDetalle(id) {
         '<div class="detalle-section">' +
           '<p class="detalle-section-title">Otros</p>' +
           fila("Edad/Tipo", c.edad || "—") +
+           '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value"></span></div>' +
+          fila("Decision:",      c.decision || "—") +
           '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value">' + oracionBadge + '</span></div>' +
           fila("Obs.",      c.observaciones || "—") +
         '</div>';
