@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel · Jesús es Rey</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #161921;
+    --surface2: #1e2330;
+    --border:   rgba(255,255,255,0.06);
+    --gold:     #c9a227;
+    --gold2:    #e8c354;
+    --blue:     #4a82e4;
+    --green:    #3ecf8e;
+    --rose:     #e05c7a;
+    --text:     #f1ede4;
+    --muted:    #7a7f8e;
+  }
+
+  body {
+    font-family: "Outfit", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  .panel-header {
+    background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
+    padding: 28px 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+ 
+  
+  .panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .logo-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(201,162,39,0.3);
+    animation: spinRing 12s linear infinite;
+  }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .logo-img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    background: #fff;
+    padding: 3px;
+    display: block;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 1px rgba(201,162,39,0.25), 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .panel-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+  }
+  .panel-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+  }
+  .refresh-btn {
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+    z-index: 1;
+  }
+  .refresh-btn:hover { background: rgba(201,162,39,0.15); color: var(--gold); }
+
+  /* CONTENIDO */
+  .panel-body {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* SECCIÓN TÍTULO */
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-left: 2px;
+  }
+
+  /* TARJETAS GENERALES */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+  .stat-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin: 0 auto 10px;
+  }
+  .stat-icon.gold  { background: rgba(201,162,39,0.12); color: var(--gold2); }
+  .stat-icon.blue  { background: rgba(74,130,228,0.12); color: #7aaaf5; }
+  .stat-icon.green { background: rgba(62,207,142,0.12); color: var(--green); }
+  .stat-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* TABLA USUARIOS */
+  .user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .user-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  @media (max-width: 480px) {
+    .user-card { grid-template-columns: 1fr 1fr; }
+    .ultima-act { grid-column: 1 / -1; text-align: left; }
+  }
+  .user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .user-rol {
+    display: inline-block;
+    background: rgba(201,162,39,0.12);
+    color: var(--gold2);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 4px;
+  }
+  .user-stat { text-align: center; }
+  .user-stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .user-stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .ultima-act {
+    text-align: right;
+    position: relative;
+  }
+  .ultima-fecha {
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .ultima-fecha:hover { border-color: rgba(201,162,39,0.3); }
+  .ultima-fecha span {
+    display: block;
+    font-size: 10px;
+    color: var(--gold2);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  /* TOOLTIP */
+  .tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: var(--surface2);
+    border: 1px solid rgba(201,162,39,0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    width: 220px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    text-align: left;
+  }
+  .ultima-act:hover .tooltip { display: block; }
+  .tooltip-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .tooltip-row {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    display: flex;
+    gap: 6px;
+  }
+  .tooltip-row strong { color: var(--text); font-weight: 600; }
+  .tooltip-obs {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    line-height: 1.4;
+  }
+
+  /* GRAFICOS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) {
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  /* ORACIONES */
+  .oracion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .oracion-item:last-child { border-bottom: none; }
+  .oracion-rank {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .oracion-rank.top { color: var(--gold2); }
+  .oracion-bar-wrap { flex: 1; }
+  .oracion-motivo {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .oracion-bar-bg {
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .oracion-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    transition: width 0.6s ease;
+  }
+  .oracion-count {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--gold2);
+    flex-shrink: 0;
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* EDADES */
+  .edad-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .edad-item:last-child { border-bottom: none; }
+  .edad-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .edad-bar-wrap { flex: 1; }
+  .edad-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+  }
+  .edad-bar-bg {
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .edad-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+  }
+  .edad-count {
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+    min-width: 28px;
+    text-align: right;
+  }
+
+  /* LOADING */
+  .loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .loading i {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 12px;
+    animation: spinLoad 1s linear infinite;
+  }
+  @keyframes spinLoad { to { transform: rotate(360deg); } }
+
+  /* EMPTY */
+  .empty {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="panel-header">
+  <div class="panel-header-left">
+    <div class="logo-wrap">
+      <div class="logo-ring"></div>
+      <img class="logo-img" src="source/jer.png" alt="Jesús es Rey">
+    </div>
+    <div>
+      <h1 class="panel-title">Panel general</h1>
+      <p class="panel-sub">Jesús es Rey · Resumen de actividad</p>
+    </div>
+  </div>
+  <button class="refresh-btn" onclick="cargarPanel()" title="Actualizar">
+    <i class="ti ti-refresh"></i>
+  </button>
+</div>
+
+<div class="panel-body">
+
+  <div class="loading" id="loading">
+    <i class="ti ti-loader"></i>
+    Cargando datos...
+  </div>
+
+  <div id="contenido" style="display:none; flex-direction:column; gap:24px;">
+
+    <!-- GENERAL -->
+    <div>
+      <p class="section-title">Resumen general</p>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon gold"><i class="ti ti-users"></i></div>
+          <div class="stat-value" id="total-usuarios">-</div>
+          <div class="stat-label">Usuarios registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="ti ti-file-plus"></i></div>
+          <div class="stat-value" id="total-troqueles">-</div>
+          <div class="stat-label">Troqueles totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="ti ti-chart-line"></i></div>
+          <div class="stat-value" id="total-actividades">-</div>
+          <div class="stat-label">Actividades realizadas</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN POR USUARIO -->
+    <div>
+      <p class="section-title">Resumen por usuario</p>
+      <div class="user-list" id="user-list">
+        <div class="empty">Sin datos</div>
+      </div>
+    </div>
+
+    <!-- RANKINGS -->
+    <div>
+      <p class="section-title">Rankings</p>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <p class="chart-title">🏆 Top 5 · Troqueles cargados</p>
+          <canvas id="chart-troqueles"></canvas>
+        </div>
+        <div class="chart-card">
+          <p class="chart-title">⚡ Top 5 · Actividades realizadas</p>
+          <canvas id="chart-actividades"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOTIVOS DE ORACIÓN -->
+    <div>
+      <p class="section-title">Motivos de oración</p>
+      <div class="chart-card">
+        <p class="chart-title">🙏 Ranking de motivos</p>
+        <div id="oraciones-list"></div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUCIÓN POR TIPO -->
+    <div>
+      <p class="section-title">Distribución por tipo</p>
+      <div class="chart-card">
+        <p class="chart-title">👥 Adultos / Jóvenes / Adolescentes / Niños</p>
+        <div id="edades-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /contenido -->
+
+</div><!-- /panel-body -->
+
+<script>
+function formatFecha(fechaStr) {
+  if (!fechaStr) return null;
+  const d = new Date(fechaStr);
+  return d.toLocaleDateString("es-AR") + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function cargarPanel() {
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("contenido").style.display = "none";
+
+  fetch("http://localhost/htdocs/JER/php/panel.php")
+    .then(function(r) { return r.json(); })
+    .then(function(data) { renderPanel(data); })
+    .catch(function(err) {
+      document.getElementById("loading").innerHTML = '<i class="ti ti-alert-circle"></i> Error al cargar los datos.';
+      console.error(err);
+    });
+}
+
+function renderPanel(data) {
+
+  // TOTALES
+  document.getElementById("total-usuarios").textContent    = data.totales.usuarios;
+  document.getElementById("total-troqueles").textContent   = data.totales.troqueles;
+  document.getElementById("total-actividades").textContent = data.totales.actividades;
+
+  // USUARIOS
+  const lista = document.getElementById("user-list");
+  if (!data.usuarios || data.usuarios.length === 0) {
+    lista.innerHTML = '<div class="empty">Sin usuarios registrados</div>';
+  } else {
+    lista.innerHTML = data.usuarios.map(function(u) {
+      const fechaStr = formatFecha(u.ultima_actividad_fecha);
+
+      const tooltip = u.ultima_actividad_fecha ? `
+        <div class="tooltip">
+          <div class="tooltip-name">${u.contacto_nombre || "-"} ${u.contacto_apellido || ""}</div>
+          <div class="tooltip-row"><strong>Medio:</strong> ${u.ultima_medio || "-"}</div>
+          <div class="tooltip-row"><strong>Fecha:</strong> ${fechaStr}</div>
+          ${u.ultima_obs ? `<div class="tooltip-obs">${u.ultima_obs}</div>` : ""}
+        </div>
+      ` : "";
+
+      const ultimaHTML = fechaStr ? `
+        <div class="ultima-act">
+          <div class="ultima-fecha">
+            <span>Última actividad</span>
+            ${fechaStr}
+          </div>
+          ${tooltip}
+        </div>
+      ` : `<div class="ultima-act"><div class="ultima-fecha" style="color:var(--muted)">Sin actividad</div></div>`;
+
+      return `
+        <div class="user-card">
+          <div class="user-info">
+            <div class="user-name">${u.nombre} ${u.apellido}</div>
+            <div class="user-rol">${u.rol}</div>
+          </div>
+          <div class="user-stat">
+            <div class="user-stat-value">${u.troqueles}</div>
+            <div class="user-stat-label">Troqueles</div>
+          </div>
+          <div class="user-stat">
+            <div class="user-stat-value">${u.actividades}</div>
+            <div class="user-stat-label">Actividades</div>
+          </div>
+          ${ultimaHTML}
+        </div>
+      `;
+    }).join("");
+  }
+
+  // GRÁFICO TROQUELES
+  const ctxT = document.getElementById("chart-troqueles").getContext("2d");
+  new Chart(ctxT, {
+    type: "bar",
+    data: {
+      labels: data.rankTroqueles.map(function(u) {
+        return u.nombre + " " + u.apellido.charAt(0) + ".";
+      }),
+      datasets: [{
+        data: data.rankTroqueles.map(function(u) { return u.total; }),
+        backgroundColor: [
+          "rgba(201,162,39,0.7)",
+          "rgba(201,162,39,0.55)",
+          "rgba(201,162,39,0.4)",
+          "rgba(201,162,39,0.3)",
+          "rgba(201,162,39,0.2)"
+        ],
+        borderColor:  "rgba(201,162,39,0.8)",
+        borderWidth:  1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7a7f8e", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+        y: { ticks: { color: "#f1ede4", font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // GRÁFICO ACTIVIDADES
+  const ctxA = document.getElementById("chart-actividades").getContext("2d");
+  new Chart(ctxA, {
+    type: "bar",
+    data: {
+      labels: data.rankActividades.map(function(u) {
+        return u.nombre + " " + u.apellido.charAt(0) + ".";
+      }),
+      datasets: [{
+        data: data.rankActividades.map(function(u) { return u.total; }),
+        backgroundColor: [
+          "rgba(62,207,142,0.7)",
+          "rgba(62,207,142,0.55)",
+          "rgba(62,207,142,0.4)",
+          "rgba(62,207,142,0.3)",
+          "rgba(62,207,142,0.2)"
+        ],
+        borderColor:  "rgba(62,207,142,0.8)",
+        borderWidth:  1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7a7f8e", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+        y: { ticks: { color: "#f1ede4", font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // MOTIVOS DE ORACIÓN
+  const oracionesList = document.getElementById("oraciones-list");
+  if (!data.rankOraciones || data.rankOraciones.length === 0) {
+    oracionesList.innerHTML = '<div class="empty">Sin datos de oración</div>';
+  } else {
+    const maxOracion = parseInt(data.rankOraciones[0].total);
+    oracionesList.innerHTML = data.rankOraciones.map(function(o, i) {
+      const pct   = Math.round((parseInt(o.total) / maxOracion) * 100);
+      const isTop = i < 3;
+      return `
+        <div class="oracion-item">
+          <div class="oracion-rank ${isTop ? "top" : ""}">${i + 1}</div>
+          <div class="oracion-bar-wrap">
+            <div class="oracion-motivo">${o.motivo}</div>
+            <div class="oracion-bar-bg">
+              <div class="oracion-bar-fill" style="width: ${pct}%"></div>
+            </div>
+          </div>
+          <div class="oracion-count">${o.total}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // RANKING EDADES
+  const edadesList = document.getElementById("edades-list");
+  if (!data.rankEdades || data.rankEdades.length === 0) {
+    edadesList.innerHTML = '<div class="empty">Sin datos</div>';
+  } else {
+    const maxEdad = parseInt(data.rankEdades[0].total);
+    const totalEdades = data.rankEdades.reduce(function(acc, e) {
+      return acc + parseInt(e.total);
+    }, 0);
+
+    const config = {
+      "Adulto":      { color: "rgba(74,130,228,0.8)",  bg: "rgba(74,130,228,0.15)",  icon: "ti-user" },
+      "Joven":       { color: "rgba(62,207,142,0.8)",  bg: "rgba(62,207,142,0.15)",  icon: "ti-friends" },
+      "Adolescente": { color: "rgba(201,162,39,0.8)",  bg: "rgba(201,162,39,0.15)",  icon: "ti-user-exclamation" },
+      "Niño":        { color: "rgba(224,92,122,0.8)",  bg: "rgba(224,92,122,0.15)",  icon: "ti-mood-smile" }
+    };
+
+    edadesList.innerHTML = data.rankEdades.map(function(e) {
+      const pct      = Math.round((parseInt(e.total) / maxEdad) * 100);
+      const pctTotal = Math.round((parseInt(e.total) / totalEdades) * 100);
+      const cfg      = config[e.edad] || {
+        color: "rgba(255,255,255,0.5)",
+        bg:    "rgba(255,255,255,0.08)",
+        icon:  "ti-users"
+      };
+      return `
+        <div class="edad-item">
+          <div class="edad-icon" style="background:${cfg.bg}; color:${cfg.color}">
+            <i class="ti ${cfg.icon}"></i>
+          </div>
+          <div class="edad-bar-wrap">
+            <div class="edad-label">
+              ${e.edad}
+              <span style="font-size:10px; color:var(--muted); font-weight:400">${pctTotal}%</span>
+            </div>
+            <div class="edad-bar-bg">
+              <div class="edad-bar-fill" style="width:${pct}%; background:${cfg.color}"></div>
+            </div>
+          </div>
+          <div class="edad-count" style="color:${cfg.color}">${e.total}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  // MOSTRAR
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("contenido").style.display = "flex";
+}
+
+cargarPanel();
+</script>
+
+</body>
+</html>
