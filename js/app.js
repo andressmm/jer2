@@ -1,6 +1,6 @@
 const getUser = () => JSON.parse(localStorage.getItem("user") || "null");
 
-const BASE_URL = "https://cronomet.com.ar/jer/php";
+const BASE_URL = "https://www.cronomet.com.ar/jer/php";
 
 const nombre = document.querySelector(".dash-name");
 const rol    = document.querySelector(".dash-role");
