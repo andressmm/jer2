@@ -610,8 +610,7 @@ function showDetalle(id) {
         '<div class="detalle-section">' +
           '<p class="detalle-section-title">Otros</p>' +
           fila("Edad/Tipo", c.edad || "—") +
-           '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value"></span></div>' +
-          fila("Decision:",      c.decision || "—") +
+          fila("Decisión", c.decision || "—") +
           '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value">' + oracionBadge + '</span></div>' +
           fila("Obs.",      c.observaciones || "—") +
         '</div>';
