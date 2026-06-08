@@ -44,7 +44,7 @@
     overflow: hidden;
   }
  
-  
+  }
   .panel-header-left {
     display: flex;
     align-items: center;
@@ -409,6 +409,56 @@
     color: var(--muted);
     font-size: 13px;
   }
+
+
+
+  /* DECISIONES */
+  .decision-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .decision-item:last-child { border-bottom: none; }
+  .decision-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .decision-bar-wrap { flex: 1; }
+  .decision-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .decision-bar-bg {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .decision-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+  }
+  .decision-count {
+    font-size: 22px;
+    font-weight: 800;
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
+  }
+  .decision-pct {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 6px;
+  }
 </style>
 </head>
 <body>
@@ -492,6 +542,17 @@
       </div>
     </div>
 
+
+<!-- DECISIONES -->
+<div>
+  <p class="section-title">Decisiones</p>
+  <div class="chart-card">
+    <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
+    <div id="decisiones-list"></div>
+  </div>
+</div>
+
+
     <!-- DISTRIBUCIÓN POR TIPO -->
     <div>
       <p class="section-title">Distribución por tipo</p>
@@ -516,7 +577,7 @@ function cargarPanel() {
   document.getElementById("loading").style.display = "block";
   document.getElementById("contenido").style.display = "none";
 
-  fetch("https://www.cronomet.com.ar/jer/php/panel.php")
+  fetch("http://www.cronomet.com.ar/jer/php/panel.php")
     .then(function(r) { return r.json(); })
     .then(function(data) { renderPanel(data); })
     .catch(function(err) {
@@ -707,6 +768,53 @@ function renderPanel(data) {
             </div>
           </div>
           <div class="edad-count" style="color:${cfg.color}">${e.total}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+
+
+// DECISIONES
+  const decisionesList = document.getElementById("decisiones-list");
+  if (!data.rankDecisiones || data.rankDecisiones.length === 0) {
+    decisionesList.innerHTML = '<div class="empty">Sin decisiones registradas</div>';
+  } else {
+
+    const totalDecisiones = data.rankDecisiones.reduce(function(acc, d) {
+      return acc + parseInt(d.total);
+    }, 0);
+
+    const configDec = {
+      "Decision de fe":  { color: "rgba(201,162,39,0.9)",  bg: "rgba(201,162,39,0.15)",  icon: "✝️" },
+      "Reconciliacion":  { color: "rgba(62,207,142,0.9)",  bg: "rgba(62,207,142,0.15)",  icon: "🤝" }
+    };
+
+    const maxDec = parseInt(data.rankDecisiones[0].total);
+
+    decisionesList.innerHTML = data.rankDecisiones.map(function(d) {
+      const pct      = Math.round((parseInt(d.total) / maxDec) * 100);
+      const pctTotal = Math.round((parseInt(d.total) / totalDecisiones) * 100);
+      const cfg      = configDec[d.decision] || {
+        color: "rgba(255,255,255,0.5)",
+        bg:    "rgba(255,255,255,0.08)",
+        icon:  "⚡"
+      };
+      return `
+        <div class="decision-item">
+          <div class="decision-icon" style="background:${cfg.bg}">
+            ${cfg.icon}
+          </div>
+          <div class="decision-bar-wrap">
+            <div class="decision-label">
+              ${d.decision}
+              <span class="decision-pct">${pctTotal}% del total</span>
+            </div>
+            <div class="decision-bar-bg">
+              <div class="decision-bar-fill" style="width:${pct}%; background:${cfg.color}"></div>
+            </div>
+          </div>
+          <div class="decision-count" style="color:${cfg.color}">${d.total}</div>
         </div>
       `;
     }).join("");
