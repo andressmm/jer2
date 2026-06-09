@@ -364,7 +364,9 @@ formData.append("decision", document.querySelector("#decision-group .toggle-btn.
 /*---------------------------------------------------------------------*/
 /* === MIS CONTACTOS === */
 
-function showContactos() {
+function showContactos(getOpcion) {
+
+  console.log(getOpcion);
   showScreen("contactos");
 
   document.getElementById("contactos-loading").style.display = "flex";
@@ -416,16 +418,24 @@ function showContactos() {
       list.innerHTML = "";
 
       contactos.forEach(function(c, idx) {
-        var nombre   = (c.nombre   || c.Nombre   || "").trim();
-        var apellido = (c.apellido || c.Apellido || "").trim();
-        var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
-        var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
-        var id       = c.id || c.ID || idx;
-        var oracion  = (c.oracion || "no").trim().toLowerCase();
+        let nombre   = (c.nombre   || c.Nombre   || "").trim();
+        let apellido = (c.apellido || c.Apellido || "").trim();
+        let fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
+        let initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
+        let id       = c.id || c.ID || idx;
+        let oracion  = (c.oracion || "no").trim().toLowerCase();
 
-        var botonOracion = oracion === "si"
-          ? '<button class="oracion-btn" title="Ver oraciones" data-action="verOraciones" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">✅</button>'
+        let botonOracion = oracion === "si"
+          ? '<button class="oracion-btn oracion-activa" title="Ver oraciones" data-action="verOraciones" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>'
           : '<button class="oracion-btn" title="Pedido de oración" data-action="nuevaOracion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>';
+
+        let tituloMisContactos=document.querySelector(".title-miscontactos");
+
+
+if (getOpcion != "oraciones") { botonOracion = ""; }
+if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent="Pedidos de oración"; }
+
+
 
         var item = document.createElement("div");
         item.className = "contact-item";
@@ -438,10 +448,16 @@ function showContactos() {
           '</div>' +
           '<div class="contact-actions">' +
             botonOracion +
-            '<button class="oracion-btn" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>' +
+          ' <button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>'+
           '</div>';
 
+
+
+
         list.appendChild(item);
+        if (getOpcion === "oraciones") { document.querySelectorAll(".botLupa").forEach(btn => btn.style.display = "none"); }
+
+        
       });
 
       list.style.display = "block";
@@ -1063,7 +1079,7 @@ function showUltimasActividades() {
             'data-hora="'     + escHtml(hora)      + '" ' +
             'data-obs="'      + escHtml(obs)       + '" ' +
             'data-icono="'    + icono              + '" ' +
-            'data-action="verDetalleActividad">👁️</button>';
+            'data-action="verDetalleActividad">🔍</button>';
 
         section.appendChild(row);
       });
