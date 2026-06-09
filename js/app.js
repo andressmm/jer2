@@ -112,6 +112,11 @@ function showScreen(name) {
   target.style.display = "flex";
   setTimeout(function() { target.classList.add("visible"); }, 10);
   window.scrollTo(0, 0);
+  console.log(name);
+
+  const us=getUser();
+  console.log(us.rol);
+
 
 
     if (name==="troquel"){
@@ -119,6 +124,8 @@ function showScreen(name) {
     }
 
 }
+
+
 
 /*---------------------------------------------------------------------*/
 
