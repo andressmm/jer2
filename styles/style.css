@@ -469,6 +469,8 @@
   .ic-gold   { background: rgba(201,162,39,0.12); color: var(--accent2); }
   .ic-blue   { background: rgba(74,130,228,0.12); color: #7aaaf5; }
   .ic-green  { background: rgba(62,207,142,0.12); color: var(--green); }
+    .ic-yellow  { background: rgba(100, 114, 59, 0.514); color: var(--green); }
+
   .ic-purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
   .action-card:hover.card-purple { border-color: rgba(139,92,246,0.2); }
   .action-card:hover.card-gold { border-color: rgba(201,162,39,0.2); }
@@ -900,6 +902,11 @@
   display: flex; align-items: center; justify-content: center;
   transition: background 0.15s, transform 0.1s;
   line-height: 1;
+}
+
+.oracion-activa{ 
+box-shadow: 0 0 10px 3px rgba(67, 223, 10, 0.804);
+
 }
 .oracion-btn:active {
   background: rgba(255,255,255,0.1);
