@@ -43,8 +43,6 @@
     position: relative;
     overflow: hidden;
   }
- 
-  }
   .panel-header-left {
     display: flex;
     align-items: center;
@@ -410,8 +408,6 @@
     font-size: 13px;
   }
 
-
-
   /* DECISIONES */
   .decision-item {
     display: flex;
@@ -458,6 +454,32 @@
     color: var(--muted);
     font-weight: 400;
     margin-left: 6px;
+  }
+
+  /* BLOQUEADO */
+  .bloqueado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+  .bloqueado i {
+    font-size: 56px;
+    color: var(--rose);
+    margin-bottom: 20px;
+  }
+  .bloqueado h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .bloqueado p {
+    font-size: 13px;
+    color: var(--muted);
   }
 </style>
 </head>
@@ -542,16 +564,14 @@
       </div>
     </div>
 
-
-<!-- DECISIONES -->
-<div>
-  <p class="section-title">Decisiones</p>
-  <div class="chart-card">
-    <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
-    <div id="decisiones-list"></div>
-  </div>
-</div>
-
+    <!-- DECISIONES -->
+    <div>
+      <p class="section-title">Decisiones</p>
+      <div class="chart-card">
+        <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
+        <div id="decisiones-list"></div>
+      </div>
+    </div>
 
     <!-- DISTRIBUCIÓN POR TIPO -->
     <div>
@@ -567,6 +587,36 @@
 </div><!-- /panel-body -->
 
 <script>
+// ── VERIFICACIÓN DE ACCESO ──────────────────────────────────────────────────
+const userStr = localStorage.getItem("user");
+
+if (!userStr) {
+  // No hay sesión iniciada
+  document.querySelector(".panel-body").innerHTML = `
+    <div class="bloqueado">
+      <i class="ti ti-lock"></i>
+      <h2>NO HABILITADO PARA ESTA OPCIÓN</h2>
+      <p>No hay sesión iniciada.</p>
+    </div>`;
+
+} else {
+  const us = JSON.parse(userStr);
+
+  if (us.rol === "Pastor" || us.rol === "Ay.Pastor") {
+    // Acceso permitido → cargar datos
+    cargarPanel();
+  } else {
+    // Rol sin permiso
+    document.querySelector(".panel-body").innerHTML = `
+      <div class="bloqueado">
+        <i class="ti ti-shield-off"></i>
+        <h2>NO HABILITADO PARA ESTA OPCIÓN</h2>
+        <p>Tu rol <strong style="color:var(--gold2)">${us.rol}</strong> no tiene acceso a este panel.</p>
+      </div>`;
+  }
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 function formatFecha(fechaStr) {
   if (!fechaStr) return null;
   const d = new Date(fechaStr);
@@ -577,7 +627,7 @@ function cargarPanel() {
   document.getElementById("loading").style.display = "block";
   document.getElementById("contenido").style.display = "none";
 
-  fetch("https://www.cronomet.com.ar/jer/php/panel.php")
+  fetch("http://www.cronomet.com.ar/jer/php/panel.php")
     .then(function(r) { return r.json(); })
     .then(function(data) { renderPanel(data); })
     .catch(function(err) {
@@ -773,22 +823,19 @@ function renderPanel(data) {
     }).join("");
   }
 
-
-
-// DECISIONES
+  // DECISIONES
   const decisionesList = document.getElementById("decisiones-list");
   if (!data.rankDecisiones || data.rankDecisiones.length === 0) {
     decisionesList.innerHTML = '<div class="empty">Sin decisiones registradas</div>';
   } else {
-
     const totalDecisiones = data.rankDecisiones.reduce(function(acc, d) {
       return acc + parseInt(d.total);
     }, 0);
 
     const configDec = {
-      "Decisión de fe":   { color: "rgba(201,162,39,0.9)",  bg: "rgba(201,162,39,0.15)",  icon: "✝️" },
-      "Reconciliación":   { color: "rgba(62,207,142,0.9)",  bg: "rgba(62,207,142,0.15)",  icon: "🤝" },
-      "Ninguna":          { color: "rgba(122,127,142,0.8)", bg: "rgba(122,127,142,0.12)", icon: "➖" }
+      "Decisión de fe": { color: "rgba(201,162,39,0.9)",  bg: "rgba(201,162,39,0.15)",  icon: "✝️" },
+      "Reconciliación": { color: "rgba(62,207,142,0.9)",  bg: "rgba(62,207,142,0.15)",  icon: "🤝" },
+      "Ninguna":        { color: "rgba(122,127,142,0.8)", bg: "rgba(122,127,142,0.12)", icon: "➖" }
     };
 
     const maxDec = parseInt(data.rankDecisiones[0].total);
@@ -825,8 +872,6 @@ function renderPanel(data) {
   document.getElementById("loading").style.display = "none";
   document.getElementById("contenido").style.display = "flex";
 }
-
-cargarPanel();
 </script>
 
 </body>
