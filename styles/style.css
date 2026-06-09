@@ -459,6 +459,10 @@
   }
   .action-card:active { transform: scale(0.98); }
 
+
+  .panel{
+    display:none;
+  }
   .action-icon {
     width: 48px; height: 48px;
     border-radius: 13px;
