@@ -12,9 +12,7 @@ const cargarDatosUsuario = () => {
   if (user) {
     nombre.textContent = `${user.nombre} ${user.apellido}`;
     rol.textContent    = user.rol;
-    const panel=document.querySelector(".panel");
-    if (panel=="pastor" || panel=="ay.pastor") { panel.style.display="block"; } else { panel.style.display="none"; }
-
+  
 
   } else {
     nombre.textContent = "Invitado";
