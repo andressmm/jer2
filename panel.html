@@ -627,7 +627,7 @@ function cargarPanel() {
   document.getElementById("loading").style.display = "block";
   document.getElementById("contenido").style.display = "none";
 
-  fetch("http://www.cronomet.com.ar/jer/php/panel.php")
+  fetch("https://www.cronomet.com.ar/jer/php/panel.php")
     .then(function(r) { return r.json(); })
     .then(function(data) { renderPanel(data); })
     .catch(function(err) {
