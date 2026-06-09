@@ -474,8 +474,8 @@
   .ic-blue   { background: rgba(74,130,228,0.12); color: #7aaaf5; }
 
   .ic-green  { background: rgba(62,207,142,0.12); color: var(--green); }
-    .ic-yellow  { background: #5a5a2ede;color: rgba(225, 225, 10, 0.514); }
-
+    .ic-yellow  { background: #5a5a2ede;color: rgba(213, 213, 17, 0.888); }
+  .ic-red  { background: #6b3d35de;color: rgba(213, 46, 17, 0.936); }
   .ic-purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
   .action-card:hover.card-purple { border-color: rgba(139,92,246,0.2); }
   .action-card:hover.card-gold { border-color: rgba(201,162,39,0.2); }
