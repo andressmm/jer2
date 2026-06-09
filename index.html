@@ -118,11 +118,24 @@
           <i class="ti ti-users"></i>
         </div>
         <div class="action-text">
-          <p class="action-title">Mis contactos / Oraciones</p>
-          <p class="action-desc">Lista de contactos / Carga de oraciones</p>
+          <p class="action-title">Mis contactos</p>
+          <p class="action-desc">Lista de contactos</p>
         </div>
         <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
       </button>
+
+
+         <button class="action-card card-blue" onclick="showContactos('oraciones')">
+        <div class="action-icon ic-yellow">
+          <i class="ti ti-pray"></i>
+        </div>
+        <div class="action-text">
+          <p class="action-title">Oraciones</p>
+          <p class="action-desc">Carga de oraciones</p>
+        </div>
+        <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
+      </button>
+
 
       <button class="action-card card-green" onclick="showSeguimiento('seguimiento')">
         <div class="action-icon ic-green">
@@ -265,6 +278,8 @@
             <button class="toggle-btn" onclick="selectTipo(this)">Joven</button>
             <button class="toggle-btn" onclick="selectTipo(this)">Adolescente</button>
             <button class="toggle-btn" onclick="selectTipo(this)">Niño</button>
+            <button class="toggle-btn" onclick="selectTipo(this)">Pastor</button>
+            <button class="toggle-btn" onclick="selectTipo(this)">Ay.Pastor</button>
           </div>
         </div>
       </div>
@@ -354,7 +369,7 @@
         <i class="ti ti-arrow-left"></i>
       </button>
       <div class="screen-header-text">
-        <p class="screen-title">Mis contactos</p>
+        <p class="screen-title title-miscontactos">Mis contactos</p>
         <p class="screen-subtitle" id="contactos-subtitle">Listado de tus contactos</p>
       </div>
     </div>
