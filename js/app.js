@@ -115,7 +115,7 @@ function showScreen(name) {
   console.log(name);
 
   const us=getUser();
-  console.log(us.rol);
+  
 if ((us.rol === "Pastor" || us.rol === "Ay.Pastor") && name === "dashboard") {
     const panel = document.querySelector(".panel");
     panel.style.display = "flex";
