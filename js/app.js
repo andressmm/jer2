@@ -114,7 +114,8 @@ function showScreen(name) {
   window.scrollTo(0, 0);
   console.log(name);
 
-  const us=getUser();
+const us = JSON.parse(localStorage.getItem("user"));
+
   
 if ((us.rol === "Pastor" || us.rol === "Ay.Pastor") && name === "dashboard") {
     const panel = document.querySelector(".panel");
