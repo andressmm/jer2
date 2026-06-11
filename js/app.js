@@ -494,23 +494,18 @@ function escHtml(str) {
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN DE EVENTOS — LISTA CONTACTOS === */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("click", function(e) {
+  var btn = e.target.closest("[data-action]");
+  if (!btn) return;
+  if (!btn.closest("#contactos-list")) return;
 
-  document.getElementById("contactos-list").addEventListener("click", function(e) {
+  var action = btn.dataset.action;
+  var id     = btn.dataset.id;
+  var nombre = btn.dataset.nombre || "";
 
-    var btn = e.target.closest("[data-action]");
-    if (!btn) return;
-
-    var action = btn.dataset.action;
-    var id     = btn.dataset.id;
-    var nombre = btn.dataset.nombre || "";
-
-    if (action === "nuevaOracion") showOracion(id, nombre);
-    if (action === "verOraciones") showOraciones(id, nombre);
-    if (action === "verDetalle")   showDetalle(id);
-
-  });
-
+  if (action === "nuevaOracion") showOracion(id, nombre);
+  if (action === "verOraciones") showOraciones(id, nombre);
+  if (action === "verDetalle")   showDetalle(id);
 });
 
 /*---------------------------------------------------------------------*/
