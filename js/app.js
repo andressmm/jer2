@@ -12,8 +12,6 @@ const cargarDatosUsuario = () => {
   if (user) {
     nombre.textContent = `${user.nombre} ${user.apellido}`;
     rol.textContent    = user.rol;
-  
-
   } else {
     nombre.textContent = "Invitado";
     rol.textContent    = "Sin rol asignado";
@@ -69,7 +67,7 @@ async function verificarDni() {
   }
 
   try {
-    const response = await fetch(BASE_URL +"/identificarme.php", {
+    const response = await fetch(BASE_URL + "/identificarme.php", {
       method:  "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body:    "dni=" + encodeURIComponent(dni)
@@ -97,7 +95,7 @@ async function verificarDni() {
 
 /*---------------------------------------------------------------------*/
 
-const SCREENS = ["home", "dashboard", "troquel", "registro", "contactos","seguimiento"];
+const SCREENS = ["home", "dashboard", "troquel", "registro", "contactos", "seguimiento"];
 
 function showScreen(name) {
   SCREENS.forEach(function(s) {
@@ -107,29 +105,25 @@ function showScreen(name) {
     el.classList.remove("visible");
   });
   let target = document.getElementById("screen-" + name);
-  
+
   if (!target) return;
   target.style.display = "flex";
   setTimeout(function() { target.classList.add("visible"); }, 10);
   window.scrollTo(0, 0);
- // console.log(name);
+  console.log(name);
 
-const us = JSON.parse(localStorage.getItem("user"));
+  const us = JSON.parse(localStorage.getItem("user"));
+  console.log(us.rol);
 
-  
-if ((us.rol === "Pastor" || us.rol === "Ay.Pastor") && name === "dashboard") {
+  if ((us.rol === "Pastor" || us.rol === "Ay.Pastor") && name === "dashboard") {
     const panel = document.querySelector(".panel");
     panel.style.display = "flex";
+  }
+
+  if (name === "troquel") {
+    limpiarFormTroquel();
+  }
 }
-
-
-    if (name==="troquel"){
-       limpiarFormTroquel(); 
-    }
-
-}
-
-
 
 /*---------------------------------------------------------------------*/
 
@@ -178,10 +172,10 @@ function showToast(msg, success) {
     ].join(";");
     document.body.appendChild(t);
   }
-  t.textContent    = msg;
-  t.style.border   = "1px solid " + (success ? "rgba(62,207,142,0.35)" : "rgba(224,92,122,0.35)");
-  t.style.color    = success ? "#3ecf8e" : "#e05c7a";
-  t.style.opacity  = "1";
+  t.textContent     = msg;
+  t.style.border    = "1px solid " + (success ? "rgba(62,207,142,0.35)" : "rgba(224,92,122,0.35)");
+  t.style.color     = success ? "#3ecf8e" : "#e05c7a";
+  t.style.opacity   = "1";
   t.style.transform = "translateX(-50%) translateY(0)";
   clearTimeout(t._timer);
   t._timer = setTimeout(function() {
@@ -246,7 +240,7 @@ function guardarUsuario() {
   formData.append("direccion", document.getElementById("r-direccion").value.trim());
   formData.append("rol",       document.querySelector("#rol-group .toggle-btn.active").textContent.trim());
 
-  fetch(BASE_URL +"/guardarusuario.php", {
+  fetch(BASE_URL + "/guardarusuario.php", {
     method: "POST",
     body:   formData
   })
@@ -310,16 +304,15 @@ function guardarTroquel() {
                     ? document.querySelector("#visita-group .toggle-btn.active").textContent.trim()
                     : "No";
 
-
-                    var casadepazVal = document.querySelector("#casadepaz-group .toggle-btn.active")
+  var casadepazVal = document.querySelector("#casadepaz-group .toggle-btn.active")
                    ? document.querySelector("#casadepaz-group .toggle-btn.active").textContent.trim()
                    : "No";
 
-var celularVal  = document.getElementById("f-celular").value.trim();
-
+  var celularVal = document.getElementById("f-celular").value.trim();
 
   // 1. Verificar duplicado primero
-fetch(BASE_URL +"/verificartroquel.php?nombre=" + encodeURIComponent(nombreVal) + "&apellido=" + encodeURIComponent(apellidoVal) + "&celular=" + encodeURIComponent(celularVal))    .then(function(r) { return r.json(); })
+  fetch(BASE_URL + "/verificartroquel.php?nombre=" + encodeURIComponent(nombreVal) + "&apellido=" + encodeURIComponent(apellidoVal) + "&celular=" + encodeURIComponent(celularVal))
+    .then(function(r) { return r.json(); })
     .then(function(check) {
       if (check.existe) {
         guardarTroquelBtn.textContent = "Guardar troquel";
@@ -340,15 +333,13 @@ fetch(BASE_URL +"/verificartroquel.php?nombre=" + encodeURIComponent(nombreVal) 
       formData.append("observaciones", document.getElementById("f-observaciones") ? document.getElementById("f-observaciones").value.trim() : "");
       formData.append("edad",          document.querySelector("#tipo-group .toggle-btn.active").textContent.trim());
       formData.append("visita",        visitaVal);
-      
-formData.append("casadepaz", casadepazVal);
-formData.append("decision", document.querySelector("#decision-group .toggle-btn.active").textContent.trim());
-
+      formData.append("casadepaz",     casadepazVal);
+      formData.append("decision",      document.querySelector("#decision-group .toggle-btn.active").textContent.trim());
 
       const user = getUser();
       formData.append("dataentry", user?.dni || "");
 
-      fetch(BASE_URL +"/guardartroquel.php", {
+      fetch(BASE_URL + "/guardartroquel.php", {
         method: "POST",
         body:   formData
       })
@@ -356,9 +347,7 @@ formData.append("decision", document.querySelector("#decision-group .toggle-btn.
       .then(function(result) {
         guardarTroquelBtn.textContent = "Guardar troquel";
         if (result.success) {
-          
           showToast("Troquel guardado correctamente", true);
-         
           setTimeout(function() { showScreen("dashboard"); }, 1800);
         } else {
           showToast("Error: " + result.message);
@@ -374,6 +363,7 @@ formData.append("decision", document.querySelector("#decision-group .toggle-btn.
       showToast("Error al verificar duplicados");
     });
 }
+
 /*---------------------------------------------------------------------*/
 /* === MIS CONTACTOS === */
 
@@ -408,7 +398,7 @@ function showContactos(getOpcion) {
     return;
   }
 
-  fetch(BASE_URL +"/miscontactos.php?dni=" + encodeURIComponent(dni))
+  fetch(BASE_URL + "/miscontactos.php?dni=" + encodeURIComponent(dni))
     .then(function(res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
@@ -442,13 +432,10 @@ function showContactos(getOpcion) {
           ? '<button class="oracion-btn oracion-activa" title="Ver oraciones" data-action="verOraciones" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>'
           : '<button class="oracion-btn" title="Pedido de oración" data-action="nuevaOracion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>';
 
-        let tituloMisContactos=document.querySelector(".title-miscontactos");
+        let tituloMisContactos = document.querySelector(".title-miscontactos");
 
-
-if (getOpcion != "oraciones") { botonOracion = ""; }
-if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent="Pedidos de oración"; }
-
-
+        if (getOpcion != "oraciones") { botonOracion = ""; }
+        if (getOpcion === "oraciones") { tituloMisContactos.textContent = "Pedidos de oración"; }
 
         var item = document.createElement("div");
         item.className = "contact-item";
@@ -457,20 +444,14 @@ if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent=
           '<div class="contact-avatar">' + initials + '</div>' +
           '<div class="contact-info">' +
             '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
-          
           '</div>' +
           '<div class="contact-actions">' +
             botonOracion +
-          ' <button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>'+
+            '<button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>' +
           '</div>';
-
-
-
 
         list.appendChild(item);
         if (getOpcion === "oraciones") { document.querySelectorAll(".botLupa").forEach(btn => btn.style.display = "none"); }
-
-        
       });
 
       list.style.display = "block";
@@ -491,10 +472,13 @@ function escHtml(str) {
 
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN DE EVENTOS — LISTA CONTACTOS === */
+/* Escucha en document para que funcione aunque #contactos-list        */
+/* se renderice dinámicamente después del primer load                  */
 
-document.getElementById("contactos-list").addEventListener("click", function(e) {
+document.addEventListener("click", function(e) {
   var btn = e.target.closest("[data-action]");
   if (!btn) return;
+  if (!btn.closest("#contactos-list")) return;
 
   var action = btn.dataset.action;
   var id     = btn.dataset.id;
@@ -547,7 +531,7 @@ function guardarOracion() {
   formData.append("id_contacto", oracionContactoId);
   formData.append("motivos",     JSON.stringify(seleccionados));
 
-  fetch(BASE_URL +"/guardaroracion.php", {
+  fetch(BASE_URL + "/guardaroracion.php", {
     method: "POST",
     body:   formData
   })
@@ -578,7 +562,7 @@ function guardarOracion() {
 /* === MODAL DETALLE === */
 
 function showDetalle(id) {
-  console.log(id)
+  console.log(id);
   document.getElementById("modal-detalle").classList.add("open");
   document.getElementById("detalle-nombre").textContent    = "Cargando...";
   document.getElementById("detalle-avatar").textContent    = "--";
@@ -586,7 +570,7 @@ function showDetalle(id) {
   document.getElementById("detalle-body").innerHTML =
     '<div class="contactos-loading"><div class="loading-spinner"></div><p>Cargando datos...</p></div>';
 
-  fetch(BASE_URL +"/detallecontacto.php?id=" + encodeURIComponent(id))
+  fetch(BASE_URL + "/detallecontacto.php?id=" + encodeURIComponent(id))
     .then(function(res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
@@ -597,7 +581,6 @@ function showDetalle(id) {
       let c        = d.data;
       let nombre   = (c.nombre   || "").trim();
       let apellido = (c.apellido || "").trim();
-      let decision = (c.decision || "").trim();
 
       let fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
       let initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
@@ -610,14 +593,13 @@ function showDetalle(id) {
         ? '<span class="detalle-badge badge-si">✔ Sí</span>'
         : '<span class="detalle-badge badge-no">No</span>';
 
-
-        var visitaBadge = (c.quierevisita === "Sí" || c.quierevisita === "Si" || c.quierevisita === "si")
-  ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-  : '<span class="detalle-badge badge-no">No</span>';
+      var visitaBadge = (c.quierevisita === "Sí" || c.quierevisita === "Si" || c.quierevisita === "si")
+        ? '<span class="detalle-badge badge-si">✔ Sí</span>'
+        : '<span class="detalle-badge badge-no">No</span>';
 
       var casadepazBadge = (c.casadepaz === "Sí" || c.casadepaz === "Si" || c.casadepaz === "si")
-  ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-  : '<span class="detalle-badge badge-no">No</span>';
+        ? '<span class="detalle-badge badge-si">✔ Sí</span>'
+        : '<span class="detalle-badge badge-no">No</span>';
 
       document.getElementById("detalle-body").innerHTML =
         '<div class="detalle-section">' +
@@ -631,16 +613,13 @@ function showDetalle(id) {
           fila("Barrio",    c.barrio     || "—") +
           fila("Localidad", c.localidad  || "—") +
           fila("Provincia", c.provincia  || "—") +
-         
-  '<div class="detalle-row"><span class="detalle-label">¿Quiere visita?</span><span class="detalle-value">' + visitaBadge + '</span></div>' +
-
-  '<div class="detalle-row"><span class="detalle-label">¿Casa de paz?</span><span class="detalle-value">' + casadepazBadge + '</span></div>' +
-'</div>' +
+          '<div class="detalle-row"><span class="detalle-label">¿Quiere visita?</span><span class="detalle-value">' + visitaBadge + '</span></div>' +
+          '<div class="detalle-row"><span class="detalle-label">¿Casa de paz?</span><span class="detalle-value">' + casadepazBadge + '</span></div>' +
         '</div>' +
         '<div class="detalle-section">' +
           '<p class="detalle-section-title">Otros</p>' +
           fila("Edad/Tipo", c.edad || "—") +
-          fila("Decisión", c.decision || "—") +
+          fila("Decisión",  c.decision || "—") +
           '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value">' + oracionBadge + '</span></div>' +
           fila("Obs.",      c.observaciones || "—") +
         '</div>';
@@ -679,7 +658,7 @@ function showOraciones(id, nombre) {
   document.getElementById("oraciones-body").innerHTML =
     '<div class="contactos-loading"><div class="loading-spinner"></div><p>Cargando pedidos...</p></div>';
 
-  fetch(BASE_URL +"/getoraciones.php?id_contacto=" + encodeURIComponent(id))
+  fetch(BASE_URL + "/getoraciones.php?id_contacto=" + encodeURIComponent(id))
     .then(function(res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
@@ -725,7 +704,6 @@ function showOraciones(id, nombre) {
         html2 += '</div>';
       });
 
-      // Motivos que no cayeron en ninguna categoría
       var sinCat = motivos.filter(function(m) {
         return !Object.values(categorias).some(function(arr) { return arr.indexOf(m) !== -1; });
       });
@@ -760,12 +738,9 @@ function handleOracionesOverlay(e) {
   if (e.target === document.getElementById("modal-oraciones")) closeOraciones();
 }
 
-
-
-/* ---------------------------------------------------------------------*/
+/*---------------------------------------------------------------------*/
 
 function limpiarFormTroquel() {
-  // Inputs de texto
   document.getElementById("f-nombre").value       = "";
   document.getElementById("f-apellido").value      = "";
   document.getElementById("f-celular").value       = "";
@@ -775,37 +750,26 @@ function limpiarFormTroquel() {
   document.getElementById("f-provincia").value     = "";
   document.getElementById("f-observaciones").value = "";
 
-  
-
-  // Resetear toggle contacto → WhatsApp activo
   document.querySelectorAll(".toggle-contact-btn").forEach(function(b) {
     b.classList.remove("active");
   });
   document.querySelector(".toggle-contact-btn").classList.add("active");
 
-  // Resetear tipo de persona → Adulto activo
   document.querySelectorAll("#tipo-group .toggle-btn").forEach(function(b) {
     b.classList.remove("active");
   });
   document.querySelector("#tipo-group .toggle-btn").classList.add("active");
 
-
-
   document.querySelectorAll("#casadepaz-group .toggle-btn").forEach(function(b) {
-  b.classList.remove("active");
-});
-document.querySelector("#casadepaz-group .toggle-btn").classList.add("active");
+    b.classList.remove("active");
+  });
+  document.querySelector("#casadepaz-group .toggle-btn").classList.add("active");
 
-  // Resetear visita → Sí activo
   document.querySelectorAll("#visita-group .toggle-btn").forEach(function(b) {
     b.classList.remove("active");
   });
   document.querySelector("#visita-group .toggle-btn").classList.add("active");
 }
-
-
-
-
 
 /*---------------------------------------------------------------------*/
 /* === SEGUIMIENTO === */
@@ -853,7 +817,6 @@ function showSeguimiento() {
 
       document.getElementById("seguimiento-subtitle").textContent = contactos.length + " contacto(s)";
 
-      // Separar en secciones
       var secciones = {
         "casadepaz": { label: "⛪ Casa de paz",  items: [], filtro: function(c) { return norm(c.casadepaz) === "sí" || norm(c.casadepaz) === "si"; } },
         "visita":    { label: "🏠 Visita",        items: [], filtro: function(c) { return (norm(c.quierevisita) === "sí" || norm(c.quierevisita) === "si") && norm(c.casadepaz) !== "sí" && norm(c.casadepaz) !== "si"; } },
@@ -885,8 +848,8 @@ function showSeguimiento() {
         sec.items.forEach(function(c, idx) {
           var nombre   = (c.nombre   || "").trim();
           var apellido = (c.apellido || "").trim();
-          var phone = (c.celular || "").trim();
-          var address = (c.direccion || "").trim();
+          var phone    = (c.celular  || "").trim();
+          var address  = (c.direccion || "").trim();
           var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
           var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
           var id       = c.id || idx;
@@ -898,9 +861,8 @@ function showSeguimiento() {
             '<div class="contact-avatar">' + initials + '</div>' +
             '<div class="contact-info">' +
               '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
-              
-              '<p class="contact-meta">📞' + escHtml(phone) + '</p>' +   
-              '<p class="contact-meta">🏠' + escHtml(address) + '</p>' +   
+              '<p class="contact-meta">📞' + escHtml(phone) + '</p>' +
+              '<p class="contact-meta">🏠' + escHtml(address) + '</p>' +
             '</div>' +
             '<button class="oracion-btn" title="Registrar acción" data-action="registrarSeg" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '" data-seccion="' + key + '">✏️</button>';
 
@@ -925,17 +887,19 @@ function norm(val) {
 
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN SEGUIMIENTO === */
+/* Escucha en document para evitar el problema de timing               */
 
-document.getElementById("seguimiento-body").addEventListener("click", function(e) {
+document.addEventListener("click", function(e) {
   var btn = e.target.closest("[data-action='registrarSeg']");
   if (!btn) return;
+  if (!btn.closest("#seguimiento-body")) return;
   abrirModalSeguimiento(btn.dataset.id, btn.dataset.nombre, btn.dataset.seccion);
 });
 
 /*---------------------------------------------------------------------*/
 /* === MODAL ACCIÓN SEGUIMIENTO === */
 
-var segContactoId   = null;
+var segContactoId     = null;
 var segContactoNombre = null;
 
 function abrirModalSeguimiento(id, nombre, seccion) {
@@ -944,7 +908,6 @@ function abrirModalSeguimiento(id, nombre, seccion) {
 
   document.getElementById("seg-nombre-target").textContent = nombre || "Contacto";
 
-  // Preseleccionar el tipo según la sección
   var map = { casadepaz: "⛪ Casa de paz", visita: "🏠 Visita", whatsapp: "💬 WhatsApp", llamada: "📞 Llamada" };
   document.querySelectorAll("#seg-medio-group .toggle-btn").forEach(function(b) {
     b.classList.remove("active");
@@ -954,7 +917,6 @@ function abrirModalSeguimiento(id, nombre, seccion) {
     document.querySelector("#seg-medio-group .toggle-btn").classList.add("active");
   }
 
-  // Fecha y hora actuales como default
   var now   = new Date();
   var fecha = now.toISOString().split("T")[0];
   var hora  = now.toTimeString().slice(0, 5);
@@ -990,14 +952,14 @@ function guardarSeguimiento() {
   btn.textContent = "Guardando...";
   btn.disabled    = true;
 
-  var user    = getUser();
+  var user     = getUser();
   var formData = new FormData();
-  formData.append("dni_usuario",    user?.dni || "");
-  formData.append("id_contacto",    segContactoId);
-  formData.append("medio",          medio);
-  formData.append("fecha",          fecha);
-  formData.append("hora",           hora);
-  formData.append("observaciones",  obs);
+  formData.append("dni_usuario",   user?.dni || "");
+  formData.append("id_contacto",   segContactoId);
+  formData.append("medio",         medio);
+  formData.append("fecha",         fecha);
+  formData.append("hora",          hora);
+  formData.append("observaciones", obs);
 
   fetch(BASE_URL + "/guardarseguimiento.php", {
     method: "POST",
@@ -1020,7 +982,6 @@ function guardarSeguimiento() {
     btn.disabled    = false;
   });
 }
-
 
 /*---------------------------------------------------------------------*/
 /* === MODAL ÚLTIMAS ACTIVIDADES === */
@@ -1070,11 +1031,11 @@ function showUltimasActividades() {
       section.className = "detalle-section";
 
       lista.forEach(function(a) {
-        var icono   = medioIconos[a.medio] || "📋";
-        var fecha   = a.fecha  || "—";
-        var hora    = a.hora   ? a.hora.slice(0, 5) : "—";
-        var nombre  = ((a.nombre || "") + " " + (a.apellido || "")).trim() || "Contacto";
-        var obs     = a.observaciones || "";
+        var icono  = medioIconos[a.medio] || "📋";
+        var fecha  = a.fecha  || "—";
+        var hora   = a.hora   ? a.hora.slice(0, 5) : "—";
+        var nombre = ((a.nombre || "") + " " + (a.apellido || "")).trim() || "Contacto";
+        var obs    = a.observaciones || "";
 
         var row = document.createElement("div");
         row.className = "detalle-row";
@@ -1087,12 +1048,12 @@ function showUltimasActividades() {
             '<p style="font-size:11px;color:var(--text-muted);margin-top:1px;">' + fecha + ' · ' + hora + '</p>' +
           '</div>' +
           '<button class="oracion-btn" style="flex-shrink:0;" ' +
-            'data-medio="'    + escHtml(a.medio)  + '" ' +
-            'data-nombre="'   + escHtml(nombre)   + '" ' +
-            'data-fecha="'    + escHtml(fecha)     + '" ' +
-            'data-hora="'     + escHtml(hora)      + '" ' +
-            'data-obs="'      + escHtml(obs)       + '" ' +
-            'data-icono="'    + icono              + '" ' +
+            'data-medio="'  + escHtml(a.medio) + '" ' +
+            'data-nombre="' + escHtml(nombre)  + '" ' +
+            'data-fecha="'  + escHtml(fecha)    + '" ' +
+            'data-hora="'   + escHtml(hora)     + '" ' +
+            'data-obs="'    + escHtml(obs)      + '" ' +
+            'data-icono="'  + icono             + '" ' +
             'data-action="verDetalleActividad">🔍</button>';
 
         section.appendChild(row);
@@ -1119,10 +1080,12 @@ function handleActividadesOverlay(e) {
 
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN ACTIVIDADES === */
+/* Escucha en document para evitar el problema de timing               */
 
-document.getElementById("actividades-body").addEventListener("click", function(e) {
+document.addEventListener("click", function(e) {
   var btn = e.target.closest("[data-action='verDetalleActividad']");
   if (!btn) return;
+  if (!btn.closest("#actividades-body")) return;
   abrirDetalleActividad(
     btn.dataset.medio,
     btn.dataset.nombre,
@@ -1144,9 +1107,9 @@ function abrirDetalleActividad(medio, nombre, fecha, hora, obs, icono) {
     "Casa de paz": "⛪"
   };
 
-  document.getElementById("act-icono").textContent    = medioIconos[medio] || "📋";
-  document.getElementById("act-medio").textContent    = medio   || "Actividad";
-  document.getElementById("act-contacto").textContent = nombre  || "Contacto";
+  document.getElementById("act-icono").textContent     = medioIconos[medio] || "📋";
+  document.getElementById("act-medio").textContent     = medio   || "Actividad";
+  document.getElementById("act-contacto").textContent  = nombre  || "Contacto";
   document.getElementById("act-medio-val").textContent  = medio  || "—";
   document.getElementById("act-nombre-val").textContent = nombre || "—";
   document.getElementById("act-fecha-val").textContent  = fecha  || "—";
