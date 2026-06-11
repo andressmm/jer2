@@ -112,7 +112,7 @@ function showScreen(name) {
   target.style.display = "flex";
   setTimeout(function() { target.classList.add("visible"); }, 10);
   window.scrollTo(0, 0);
-  console.log(name);
+ // console.log(name);
 
 const us = JSON.parse(localStorage.getItem("user"));
 
@@ -578,6 +578,7 @@ function guardarOracion() {
 /* === MODAL DETALLE === */
 
 function showDetalle(id) {
+  console.log(id)
   document.getElementById("modal-detalle").classList.add("open");
   document.getElementById("detalle-nombre").textContent    = "Cargando...";
   document.getElementById("detalle-avatar").textContent    = "--";
