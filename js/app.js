@@ -498,6 +498,10 @@ document.addEventListener("click", function(e) {
   var btn = e.target.closest("[data-action]");
   if (!btn) return;
 
+  console.log("btn encontrado:", btn);
+  console.log("action:", btn.dataset.action);
+  console.log("id:", btn.dataset.id);
+
   var action = btn.dataset.action;
   var id     = btn.dataset.id;
   var nombre = btn.dataset.nombre || "";
@@ -505,8 +509,7 @@ document.addEventListener("click", function(e) {
   if (action === "nuevaOracion") showOracion(id, nombre);
   if (action === "verOraciones") showOraciones(id, nombre);
   if (action === "verDetalle")   showDetalle(id);
-});
-/*---------------------------------------------------------------------*/
+});/*---------------------------------------------------------------------*/
 /* === MODAL ORACIÓN NUEVA === */
 
 var oracionContactoId = null;
