@@ -499,15 +499,15 @@ document.addEventListener("click", function(e) {
   if (!btn) return;
   if (!btn.closest("#contactos-list")) return;
 
+  console.log("action:", btn.dataset.action);
+  console.log("id:", btn.dataset.id);
+
   var action = btn.dataset.action;
   var id     = btn.dataset.id;
   var nombre = btn.dataset.nombre || "";
 
-  if (action === "nuevaOracion") showOracion(id, nombre);
-  if (action === "verOraciones") showOraciones(id, nombre);
-  if (action === "verDetalle")   showDetalle(id);
+  if (action === "verDetalle") showDetalle(id);
 });
-
 /*---------------------------------------------------------------------*/
 /* === MODAL ORACIÓN NUEVA === */
 
