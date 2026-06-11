@@ -212,6 +212,12 @@ document.addEventListener("click", function(e) {
 });
 
 
+document.getElementById("seguimiento-body").addEventListener("click", function(e) {
+  var btn = e.target.closest("[data-action='registrarSeg']");
+  if (!btn) return;
+  abrirModalSeguimiento(btn.dataset.id, btn.dataset.nombre, btn.dataset.seccion);
+});
+
 
 
 /*---------------------------------------------------------------------*/
