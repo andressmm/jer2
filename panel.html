@@ -602,7 +602,7 @@ if (!userStr) {
 } else {
   const us = JSON.parse(userStr);
 
-  if (us.rol === "Pastor" || us.rol === "Ay.Pastor") {
+  if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
     // Acceso permitido → cargar datos
     cargarPanel();
   } else {

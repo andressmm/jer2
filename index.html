@@ -516,7 +516,25 @@
 
 <!-- fin MODAL DETALLE CONTACTO -->
 
+<!-- MODAL DELEGAR -->
+<div class="modal-overlay" id="modal-delegar" onclick="handleDelegarOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <p class="modal-title">Delegar contacto</p>
+    <p class="modal-sub">Seleccioná a quién querés delegar a <strong id="delegar-nombre-target"></strong></p>
 
+    <div id="delegar-lista" style="
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 55vh;
+      overflow-y: auto;
+    "></div>
+
+    <button class="btn-cancel" onclick="closeDelegacion()">Cancelar</button>
+  </div>
+</div>
 
 
 <!-- MODAL ORACIONES GUARDADAS -->

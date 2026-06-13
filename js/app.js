@@ -118,8 +118,8 @@ function showScreen(name) {
 const us = JSON.parse(localStorage.getItem("user"));
 
 
-  console.log(us.rol);
-if ((us.rol === "Pastor" || us.rol === "Ay.Pastor") && name === "dashboard") {
+ // console.log(us.rol);
+if ((us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") && name === "dashboard") {
     const panel = document.querySelector(".panel");
     panel.style.display = "flex";
 }
@@ -209,6 +209,7 @@ document.addEventListener("click", function(e) {
   if (action === "nuevaOracion") showOracion(id, nombre);
   if (action === "verOraciones") showOraciones(id, nombre);
   if (action === "verDetalle")   showDetalle(id);
+  if (action === "registrarDelegacion") showDelegacion(id, nombre);
 });
 
 
@@ -472,10 +473,13 @@ function showContactos(getOpcion) {
           ? '<button class="oracion-btn oracion-activa" title="Ver oraciones" data-action="verOraciones" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>'
           : '<button class="oracion-btn" title="Pedido de oración" data-action="nuevaOracion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>';
 
-        let tituloMisContactos=document.querySelector(".title-miscontactos");
+ 
+          let botonDelegar = '<button class="oracion-btn botDelegar" title="Delegar contacto" data-action="registrarDelegacion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">⏩️</button>';
+ 
+          let tituloMisContactos=document.querySelector(".title-miscontactos");
 
 
-if (getOpcion != "oraciones") { botonOracion = ""; }
+if (getOpcion != "oraciones") { botonOracion = ""; tituloMisContactos.textContent="Mis contactos"; }
 if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent="Pedidos de oración"; }
 
 
@@ -491,14 +495,19 @@ if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent=
           '</div>' +
           '<div class="contact-actions">' +
             botonOracion +
-          ' <button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>'+
+            botonDelegar +
+            ' <button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>'+
           '</div>';
 
 
 
 
         list.appendChild(item);
-        if (getOpcion === "oraciones") { document.querySelectorAll(".botLupa").forEach(btn => btn.style.display = "none"); }
+        if (getOpcion === "oraciones") { document.querySelectorAll(".botLupa").forEach(btn => btn.style.display = "none"); 
+                                         document.querySelectorAll(".botDelegar").forEach(btn => btn.style.display = "none"); 
+
+
+        }
 
         
       });
@@ -1193,4 +1202,98 @@ function closeDetalleActividad() {
 
 function handleDetalleActividadOverlay(e) {
   if (e.target === document.getElementById("modal-detalle-actividad")) closeDetalleActividad();
+}
+
+
+
+
+/*---------------------------------------------------------------------*/
+/* === DELEGACION DE CONTACTO === */
+
+var delegarContactoId   = null;
+var delegarContactoNombre = null;
+
+function showDelegacion(id, nombre) {
+  delegarContactoId     = id;
+  delegarContactoNombre = nombre;
+
+  document.getElementById("delegar-nombre-target").textContent = nombre || "Contacto";
+  document.getElementById("delegar-lista").innerHTML =
+    '<div class="contactos-loading"><div class="loading-spinner"></div><p>Cargando usuarios...</p></div>';
+
+  document.getElementById("modal-delegar").classList.add("open");
+
+  var user = getUser();
+  var dniActual = user?.dni || "";
+
+  fetch(BASE_URL + "/getusuarios.php?dni=" + encodeURIComponent(dniActual))
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!data.success || !data.data || data.data.length === 0) {
+        document.getElementById("delegar-lista").innerHTML =
+          '<div class="contactos-empty"><p>Sin usuarios disponibles</p></div>';
+        return;
+      }
+
+      document.getElementById("delegar-lista").innerHTML = data.data.map(function(u) {
+        var fullname = (u.nombre + " " + u.apellido).trim();
+        var initials = ((u.nombre[0] || "") + (u.apellido[0] || "")).toUpperCase();
+        return (
+          '<div class="delegar-item" onclick="confirmarDelegacion(\'' + u.dni + '\', \'' + escHtml(fullname) + '\')">' +
+            '<div class="contact-avatar" style="width:36px;height:36px;font-size:13px;flex-shrink:0">' + initials + '</div>' +
+            '<div class="contact-info">' +
+              '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
+              '<p class="contact-meta">' + (u.rol || "") + '</p>' +
+            '</div>' +
+            '<span style="font-size:18px;color:var(--muted)">›</span>' +
+          '</div>'
+        );
+      }).join("");
+    })
+    .catch(function(err) {
+      document.getElementById("delegar-lista").innerHTML =
+        '<div class="contactos-empty"><p style="color:var(--rose)">Error al cargar</p><span>' + err.message + '</span></div>';
+    });
+}
+
+/*---------------------------------------------------------------------*/
+
+function confirmarDelegacion(dniDelegado, nombreDelegado) {
+  if (!confirm("¿Delegar a " + delegarContactoNombre + " a " + nombreDelegado + "?")) return;
+
+  var formData = new FormData();
+  formData.append("id_contacto",  delegarContactoId);
+  formData.append("dni_delegado", dniDelegado);
+
+  fetch(BASE_URL + "/delegarcontacto.php", {
+    method: "POST",
+    body:   formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success) {
+      closeDelegacion();
+      showToast("Contacto delegado a " + nombreDelegado, true);
+    } else {
+      showToast("Error: " + result.message);
+    }
+  })
+  .catch(function() {
+    showToast("Error de conexión");
+  });
+}
+
+/*---------------------------------------------------------------------*/
+
+function closeDelegacion() {
+  document.getElementById("modal-delegar").classList.remove("open");
+  delegarContactoId     = null;
+  delegarContactoNombre = null;
+}
+
+function handleDelegarOverlay(e) {
+  if (e.target === document.getElementById("modal-delegar")) closeDelegacion();
 }
