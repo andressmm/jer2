@@ -119,10 +119,10 @@ const us = JSON.parse(localStorage.getItem("user"));
 
 
  // console.log(us.rol);
-if ((us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") && name === "dashboard") {
+/*if ((us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") && name === "dashboard") {
     const panel = document.querySelector(".panel");
     panel.style.display = "flex";
-}
+}*/
 
 
     if (name==="troquel"){
