@@ -11,7 +11,7 @@ if (isset($_GET['dni'])) {
 
     include('conexion.php');
 
-    $sql = "SELECT * FROM troquel WHERE dataentry = '$dni' order by apellido ASC";
+    $sql = "SELECT * FROM troquel WHERE dataentry = '$dni' or delegado = '$dni' order by apellido ASC";
 
     $result = mysqli_query($link, $sql);
 

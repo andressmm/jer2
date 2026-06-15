@@ -602,18 +602,18 @@ if (!userStr) {
 } else {
   const us = JSON.parse(userStr);
 
-  if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
+ // if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
     // Acceso permitido → cargar datos
     cargarPanel();
-  } else {
+ // } else {
     // Rol sin permiso
-    document.querySelector(".panel-body").innerHTML = `
+   /* document.querySelector(".panel-body").innerHTML = `
       <div class="bloqueado">
         <i class="ti ti-shield-off"></i>
         <h2>NO HABILITADO PARA ESTA OPCIÓN</h2>
         <p>Tu rol <strong style="color:var(--gold2)">${us.rol}</strong> no tiene acceso a este panel.</p>
       </div>`;
-  }
+  }*/
 }
 // ───────────────────────────────────────────────────────────────────────────
 
