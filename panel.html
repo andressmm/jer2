@@ -494,8 +494,8 @@
       <p class="panel-sub">Jesús es Rey · Resumen de actividad</p>
     </div>
   </div>
-  <button class="refresh-btn" onclick="cargarPanel()" title="Actualizar">
-    <i class="ti ti-refresh"></i>
+  <button class="refresh-btn" onclick="regresar()" title="Regrear">
+    <i class="ti ti-arrow-left"></i>
   </button>
 </div>
 
@@ -625,6 +625,11 @@ if (!userStr) {
   // if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
   cargarPanel();
   // }
+}
+
+
+function regresar() {
+  window.location.href = "index.html";
 }
 
 // ── MODAL ───────────────────────────────────────────────────────────────────
