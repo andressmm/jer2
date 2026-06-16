@@ -209,7 +209,7 @@ document.addEventListener("click", function(e) {
   if (action === "nuevaOracion") showOracion(id, nombre);
   if (action === "verOraciones") showOraciones(id, nombre);
   if (action === "verDetalle")   showDetalle(id);
-  if (action === "registrarDelegacion") showDelegacion(id, nombre);
+if (action === "registrarDelegacion") { manejarClickDelegacion(btn); }
 });
 
 
