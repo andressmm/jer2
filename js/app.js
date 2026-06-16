@@ -439,7 +439,7 @@ function showContactos(getOpcion) {
     return;
   }
 
-  fetch(BASE_URL +"/miscontactos.php?dni=" + encodeURIComponent(dni))
+  fetch(BASE_URL + "/miscontactos.php?dni=" + encodeURIComponent(dni))
     .then(function(res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
@@ -461,29 +461,41 @@ function showContactos(getOpcion) {
       var list = document.getElementById("contactos-list");
       list.innerHTML = "";
 
-      contactos.forEach(function(c, idx) {
-        let nombre   = (c.nombre   || c.Nombre   || "").trim();
-        let apellido = (c.apellido || c.Apellido || "").trim();
-        let fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
-        let initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
-        let id       = c.id || c.ID || idx;
-        let oracion  = (c.oracion || "no").trim().toLowerCase();
+      var tituloMisContactos = document.querySelector(".title-miscontactos");
 
-        let botonOracion = oracion === "si"
+      contactos.forEach(function(c, idx) {
+        var nombre   = (c.nombre   || c.Nombre   || "").trim();
+        var apellido = (c.apellido || c.Apellido || "").trim();
+        var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
+        var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
+        var id       = c.id || c.ID || idx;
+        var oracion  = (c.oracion  || "no").trim().toLowerCase();
+
+        // ── DELEGADO ────────────────────────────────────────────────
+        var delegadoDni = (c.delegado || "").toString().trim();
+        var esDelegado  = delegadoDni !== "" && delegadoDni !== "0" && delegadoDni !== "null";
+
+        var botonDelegar = '<button class="oracion-btn botDelegar' + (esDelegado ? ' oracion-activa' : '') + '" '
+          + 'title="' + (esDelegado ? 'Ver delegación' : 'Delegar contacto') + '" '
+          + 'data-action="registrarDelegacion" '
+          + 'data-id="' + id + '" '
+          + 'data-nombre="' + escHtml(fullname) + '" '
+          + 'data-delegado="' + escHtml(delegadoDni) + '">⏩️</button>';
+
+        // ── ORACIÓN ─────────────────────────────────────────────────
+        var botonOracion = oracion === "si"
           ? '<button class="oracion-btn oracion-activa" title="Ver oraciones" data-action="verOraciones" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>'
           : '<button class="oracion-btn" title="Pedido de oración" data-action="nuevaOracion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">🙏</button>';
 
- 
-          let botonDelegar = '<button class="oracion-btn botDelegar" title="Delegar contacto" data-action="registrarDelegacion" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '">⏩️</button>';
- 
-          let tituloMisContactos=document.querySelector(".title-miscontactos");
+        // ── OPCIONES DE VISTA ────────────────────────────────────────
+        if (getOpcion !== "oraciones") {
+          botonOracion = "";
+          tituloMisContactos.textContent = "Mis contactos";
+        } else {
+          tituloMisContactos.textContent = "Pedidos de oración";
+        }
 
-
-if (getOpcion != "oraciones") { botonOracion = ""; tituloMisContactos.textContent="Mis contactos"; }
-if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent="Pedidos de oración"; }
-
-
-
+        // ── ITEM ─────────────────────────────────────────────────────
         var item = document.createElement("div");
         item.className = "contact-item";
         item.style.animationDelay = (idx * 0.05) + "s";
@@ -491,25 +503,19 @@ if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent=
           '<div class="contact-avatar">' + initials + '</div>' +
           '<div class="contact-info">' +
             '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
-          
           '</div>' +
           '<div class="contact-actions">' +
             botonOracion +
             botonDelegar +
-            ' <button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>'+
+            '<button class="oracion-btn botLupa" title="Ver datos" data-action="verDetalle" data-id="' + id + '">🔍</button>' +
           '</div>';
 
-
-
-
         list.appendChild(item);
-        if (getOpcion === "oraciones") { document.querySelectorAll(".botLupa").forEach(btn => btn.style.display = "none"); 
-                                         document.querySelectorAll(".botDelegar").forEach(btn => btn.style.display = "none"); 
 
-
+        if (getOpcion === "oraciones") {
+          document.querySelectorAll(".botLupa").forEach(function(btn) { btn.style.display = "none"; });
+          document.querySelectorAll(".botDelegar").forEach(function(btn) { btn.style.display = "none"; });
         }
-
-        
       });
 
       list.style.display = "block";
@@ -523,7 +529,63 @@ if (getOpcion === "oraciones") { botonLupa= "";  tituloMisContactos.textContent=
 }
 
 /*---------------------------------------------------------------------*/
+/* === DELEGACIÓN === */
 
+function manejarClickDelegacion(btn) {
+  var delegadoDni    = (btn.dataset.delegado || "").trim();
+  var esDelegado     = delegadoDni !== "" && delegadoDni !== "0" && delegadoDni !== "null";
+  var nombreContacto = btn.dataset.nombre || "";
+  var id             = btn.dataset.id     || "";
+
+  if (esDelegado) {
+    // Contacto ya delegado → mostrar a quién
+    fetch(BASE_URL + "/users.php?dni=" + encodeURIComponent(delegadoDni))
+      .then(function(res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        var u = Array.isArray(data) ? data[0] : data;
+        var nombreDelegado = (
+          (u.nombre   || u.Nombre   || "") + " " +
+          (u.apellido || u.Apellido || "")
+        ).trim() || "DNI " + delegadoDni;
+
+        // Reutilizamos el modal de delegación solo para mostrar info
+        document.getElementById("delegar-nombre-target").textContent = nombreContacto;
+        var lista = document.getElementById("delegar-lista");
+        lista.innerHTML =
+          '<div style="' +
+            'background:rgba(62,207,142,0.08);' +
+            'border:1px solid rgba(62,207,142,0.2);' +
+            'border-radius:12px;' +
+            'padding:14px 16px;' +
+            'display:flex;' +
+            'align-items:center;' +
+            'gap:12px;' +
+          '">' +
+            '<span style="font-size:22px;">⏩️</span>' +
+            '<div>' +
+              '<p style="font-size:13px;font-weight:700;color:var(--text);">' + escHtml(nombreDelegado) + '</p>' +
+              '<p style="font-size:11px;color:var(--text-muted);margin-top:2px;">DNI ' + escHtml(delegadoDni) + '</p>' +
+            '</div>' +
+          '</div>';
+
+        // Cambiamos el subtítulo del modal
+        document.querySelector("#modal-delegar .modal-title").textContent = "Delegado a";
+        openModal("delegar");
+      })
+      .catch(function() {
+        alert(nombreContacto + " está delegado (DNI: " + delegadoDni + ")");
+      });
+
+  } else {
+    // No delegado → flujo normal
+    registrarDelegacion(id, nombreContacto);
+  }
+}
+
+/*---------------------------------------------------------------------*/
 function escHtml(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
