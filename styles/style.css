@@ -461,7 +461,7 @@
 
 
   .panel{
-    display:none;
+    display:flex;
   }
   .action-icon {
     width: 48px; height: 48px;
