@@ -479,6 +479,74 @@
   .bloqueado i { font-size: 56px; color: var(--rose); margin-bottom: 20px; }
   .bloqueado h2 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
   .bloqueado p { font-size: 13px; color: var(--muted); }
+
+
+
+/* ── DETAILS / SUMMARY ──────────────────────────────────────────────────── */
+  .panel-details {
+    background: transparent;
+  }
+  .panel-summary {
+    list-style: none;
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+  }
+  .panel-summary::-webkit-details-marker { display: none; }
+  .panel-summary:hover {
+    background: var(--surface2);
+    border-color: rgba(201,162,39,0.2);
+  }
+  .summary-arrow {
+    font-size: 16px;
+    color: var(--muted);
+    transition: transform 0.25s ease;
+  }
+  .panel-details[open] .panel-summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-color: rgba(201,162,39,0.2);
+  }
+  .panel-details[open] .summary-arrow {
+    transform: rotate(180deg);
+    color: var(--gold);
+  }
+  .panel-details-content {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    padding: 16px;
+    animation: detailsFade 0.25s ease;
+  }
+  @keyframes detailsFade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Dentro del details-content, las tablas/cards no necesitan su propio borde duplicado */
+  .panel-details-content .tabla-wrap,
+  .panel-details-content .chart-card {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+  }
+  .panel-details-content .charts-grid {
+    gap: 16px;
+  }
+
+
 </style>
 </head>
 <body>
@@ -506,9 +574,9 @@
     Cargando datos...
   </div>
 
-  <div id="contenido" style="display:none; flex-direction:column; gap:24px;">
+  <div id="contenido" style="display:none; flex-direction:column; gap:16px;">
 
-    <!-- GENERAL -->
+    <!-- GENERAL (siempre visible, sin details) -->
     <div>
       <p class="section-title">Resumen general</p>
       <div class="stats-grid">
@@ -531,68 +599,93 @@
     </div>
 
     <!-- RESUMEN POR USUARIO -->
-    <div>
-      <p class="section-title">Resumen por usuario</p>
-      <div class="tabla-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Usuario</th>
-              <th class="col-num">Troqueles</th>
-              <th class="col-num">Actividades</th>
-              <th class="col-lupa"></th>
-            </tr>
-          </thead>
-          <tbody id="user-list">
-            <tr><td colspan="4"><div class="empty">Sin datos</div></td></tr>
-          </tbody>
-        </table>
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>👤 Resumen por usuario</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th class="col-num">Troqueles</th>
+                <th class="col-num">Actividades</th>
+                <th class="col-lupa"></th>
+              </tr>
+            </thead>
+            <tbody id="user-list">
+              <tr><td colspan="4"><div class="empty">Sin datos</div></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </details>
 
     <!-- RANKINGS -->
-    <div>
-      <p class="section-title">Rankings</p>
-      <div class="charts-grid">
-        <div class="chart-card">
-          <p class="chart-title">🏆 Top 5 · Troqueles cargados</p>
-          <canvas id="chart-troqueles"></canvas>
-        </div>
-        <div class="chart-card">
-          <p class="chart-title">⚡ Top 5 · Actividades realizadas</p>
-          <canvas id="chart-actividades"></canvas>
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>🏆 Rankings</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <p class="chart-title">🏆 Top 5 · Troqueles cargados</p>
+            <canvas id="chart-troqueles"></canvas>
+          </div>
+          <div class="chart-card">
+            <p class="chart-title">⚡ Top 5 · Actividades realizadas</p>
+            <canvas id="chart-actividades"></canvas>
+          </div>
         </div>
       </div>
-    </div>
+    </details>
 
     <!-- MOTIVOS DE ORACIÓN -->
-    <div>
-      <p class="section-title">Motivos de oración</p>
-      <div class="chart-card">
-        <p class="chart-title">🙏 Ranking de motivos</p>
-        <div id="oraciones-list"></div>
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>🙏 Motivos de oración</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">🙏 Ranking de motivos</p>
+          <div id="oraciones-list"></div>
+        </div>
       </div>
-    </div>
+    </details>
 
     <!-- DECISIONES -->
-    <div>
-      <p class="section-title">Decisiones</p>
-      <div class="chart-card">
-        <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
-        <div id="decisiones-list"></div>
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>✝️ Decisiones</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
+          <div id="decisiones-list"></div>
+        </div>
       </div>
-    </div>
+    </details>
 
     <!-- DISTRIBUCIÓN POR TIPO -->
-    <div>
-      <p class="section-title">Distribución por tipo</p>
-      <div class="chart-card">
-        <p class="chart-title">👥 Adultos / Jóvenes / Adolescentes / Niños</p>
-        <div id="edades-list"></div>
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>👥 Distribución por tipo</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">👥 Adultos / Jóvenes / Adolescentes / Niños</p>
+          <div id="edades-list"></div>
+        </div>
       </div>
-    </div>
+    </details>
 
-  </div><!-- /contenido -->
+</div><!-- /contenido -->
 
 </div><!-- /panel-body -->
 
@@ -611,7 +704,7 @@
 
 <script>
 // ── VERIFICACIÓN DE ACCESO ──────────────────────────────────────────────────
-const userStr = localStorage.getItem("user");
+/*const userStr = localStorage.getItem("user");
 
 if (!userStr) {
   document.querySelector(".panel-body").innerHTML = `
@@ -623,9 +716,9 @@ if (!userStr) {
 } else {
   // const us = JSON.parse(userStr);
   // if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
-  cargarPanel();
+  */cargarPanel();
   // }
-}
+//}
 
 
 function regresar() {
@@ -688,6 +781,16 @@ function renderPanel(data) {
   document.getElementById("total-usuarios").textContent    = data.totales.usuarios;
   document.getElementById("total-troqueles").textContent   = data.totales.troqueles;
   document.getElementById("total-actividades").textContent = data.totales.actividades;
+
+
+  // Forzar resize de los charts cuando se abre su <details>
+  document.querySelectorAll(".panel-details").forEach(function(det) {
+    det.addEventListener("toggle", function() {
+      if (det.open) {
+        window.dispatchEvent(new Event("resize"));
+      }
+    });
+  });
 
   // ── TABLA DE USUARIOS ────────────────────────────────────────────────────
   const lista        = document.getElementById("user-list");
