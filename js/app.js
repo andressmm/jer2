@@ -530,6 +530,8 @@ function showContactos(getOpcion) {
 
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN === */
+/*---------------------------------------------------------------------*/
+/* === DELEGACIÓN === */
 
 function manejarClickDelegacion(btn) {
   var delegadoDni    = (btn.dataset.delegado || "").trim();
@@ -538,7 +540,6 @@ function manejarClickDelegacion(btn) {
   var id             = btn.dataset.id     || "";
 
   if (esDelegado) {
-    var nombreDelegado = "";
 
     fetch(BASE_URL + "/getusuarios.php")
       .then(function(res) {
@@ -550,7 +551,7 @@ function manejarClickDelegacion(btn) {
           return (u.dni || u.DNI || "").toString().trim() === delegadoDni;
         });
 
-        nombreDelegado = u
+        var nombreDelegado = u
           ? ((u.nombre || u.Nombre || "") + " " + (u.apellido || u.Apellido || "")).trim()
           : "DNI " + delegadoDni;
 
@@ -577,7 +578,21 @@ function manejarClickDelegacion(btn) {
         openModal("delegar");
       })
       .catch(function() {
-        alert(nombreContacto + " está delegado a: " + (nombreDelegado || "DNI " + delegadoDni));
+        // Fallback: igual intentamos obtener el nombre antes del alert
+        fetch(BASE_URL + "/getusuarios.php")
+          .then(function(res) { return res.json(); })
+          .then(function(usuarios) {
+            var u = usuarios.find(function(u) {
+              return (u.dni || u.DNI || "").toString().trim() === delegadoDni;
+            });
+            var nombreDelegado = u
+              ? ((u.nombre || u.Nombre || "") + " " + (u.apellido || u.Apellido || "")).trim()
+              : "DNI " + delegadoDni;
+            alert(nombreContacto + " está delegado");
+          })
+          .catch(function() {
+            alert(nombreContacto + " está delegado");
+          });
       });
 
   } else {
@@ -585,7 +600,6 @@ function manejarClickDelegacion(btn) {
   }
 }
 
-/*---------------------------------------------------------------------*/
 
 
 /*---------------------------------------------------------------------*/
