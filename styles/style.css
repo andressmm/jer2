@@ -460,6 +460,11 @@
   .action-card:active { transform: scale(0.98); }
 
 
+
+  a {
+  text-decoration: none;
+  color: inherit;
+}
   .panel{
     display:flex;
   }
