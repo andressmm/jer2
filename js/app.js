@@ -530,6 +530,8 @@ function showContactos(getOpcion) {
 
 /*---------------------------------------------------------------------*/
 /* === DELEGACIÓN === */
+/*---------------------------------------------------------------------*/
+/* === DELEGACIÓN === */
 
 function manejarClickDelegacion(btn) {
   var delegadoDni    = (btn.dataset.delegado || "").trim();
@@ -538,20 +540,21 @@ function manejarClickDelegacion(btn) {
   var id             = btn.dataset.id     || "";
 
   if (esDelegado) {
-    // Contacto ya delegado → mostrar a quién
-    fetch(BASE_URL + "/users.php?dni=" + encodeURIComponent(delegadoDni))
+
+    fetch(BASE_URL + "/getusuarios.php")
       .then(function(res) {
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.json();
       })
-      .then(function(data) {
-        var u = Array.isArray(data) ? data[0] : data;
-        var nombreDelegado = (
-          (u.nombre   || u.Nombre   || "") + " " +
-          (u.apellido || u.Apellido || "")
-        ).trim() || "DNI " + delegadoDni;
+      .then(function(usuarios) {
+        var u = usuarios.find(function(u) {
+          return (u.dni || u.DNI || "").toString().trim() === delegadoDni;
+        });
 
-        // Reutilizamos el modal de delegación solo para mostrar info
+        var nombreDelegado = u
+          ? ((u.nombre || u.Nombre || "") + " " + (u.apellido || u.Apellido || "")).trim()
+          : "DNI " + delegadoDni;
+
         document.getElementById("delegar-nombre-target").textContent = nombreContacto;
         var lista = document.getElementById("delegar-lista");
         lista.innerHTML =
@@ -571,20 +574,31 @@ function manejarClickDelegacion(btn) {
             '</div>' +
           '</div>';
 
-        // Cambiamos el subtítulo del modal
         document.querySelector("#modal-delegar .modal-title").textContent = "Delegado a";
         openModal("delegar");
       })
       .catch(function() {
-        alert(nombreContacto + " está delegado (DNI: " + delegadoDni + ")");
+        // Fallback: igual intentamos obtener el nombre antes del alert
+        fetch(BASE_URL + "/getusuarios.php")
+          .then(function(res) { return res.json(); })
+          .then(function(usuarios) {
+            var u = usuarios.find(function(u) {
+              return (u.dni || u.DNI || "").toString().trim() === delegadoDni;
+            });
+            var nombreDelegado = u
+              ? ((u.nombre || u.Nombre || "") + " " + (u.apellido || u.Apellido || "")).trim()
+              : "DNI " + delegadoDni;
+            alert(nombreContacto + " está delegado a: " + nombreDelegado);
+          })
+          .catch(function() {
+            alert(nombreContacto + " está delegado a: DNI " + delegadoDni);
+          });
       });
 
   } else {
-    // No delegado → flujo normal
     registrarDelegacion(id, nombreContacto);
   }
 }
-
 /*---------------------------------------------------------------------*/
 function escHtml(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
