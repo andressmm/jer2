@@ -596,7 +596,7 @@ function manejarClickDelegacion(btn) {
       });
 
   } else {
-    registrarDelegacion(id, nombreContacto);
+    showDelegacion(id, nombreContacto);
   }
 }
 
