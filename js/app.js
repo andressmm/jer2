@@ -1018,7 +1018,7 @@ function showSeguimiento() {
             '<div class="contact-info">' +
               '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
               
-              '<p class="contact-meta">📞' + escHtml(phone) + '</p>' +   
+              '<p class="contact-meta">📞 <a class='whatsapp' href="https://wa.me/' + phone + '">' + escHtml(phone) + '</a></p>' +   
               '<p class="contact-meta">🏠' + escHtml(address) + '</p>' +   
             '</div>' +
             '<button class="oracion-btn" title="Registrar acción" data-action="registrarSeg" data-id="' + id + '" data-nombre="' + escHtml(fullname) + '" data-seccion="' + key + '">✏️</button>';

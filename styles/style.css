@@ -1263,7 +1263,10 @@ box-shadow: 0 0 10px 3px rgba(67, 223, 10, 0.804);
 }
 
 
-
+.whatsapp {
+    text-decoration: underline;
+    text-decoration-color: gray;
+}
 
 /* === SEGUIMIENTO === */
 #screen-seguimiento {
