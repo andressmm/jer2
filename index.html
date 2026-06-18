@@ -756,50 +756,6 @@
 
 
 
-<!-- MODAL DETALLE DE GRUPO -->
-<div class="modal-overlay" id="modal-crecimiento-grupo" onclick="handleCrecimientoGrupoOverlay(event)">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <p class="modal-title" id="crecimiento-grupo-titulo">Grupo</p>
-    <p class="modal-sub">Tocá un contacto para agregarlo o quitarlo del grupo</p>
-
-    <div id="crecimiento-grupo-lista" style="
-      margin-top: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 55vh;
-      overflow-y: auto;
-    "></div>
-
-    <button class="btn-cancel" onclick="closeCrecimientoGrupo()">Cerrar</button>
-  </div>
-</div>
-
-<!-- MODAL CREAR GRUPO PERSONALIZADO -->
-<div class="modal-overlay" id="modal-grupo-nuevo" onclick="handleGrupoNuevoOverlay(event)">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <p class="modal-title">Nuevo grupo</p>
-    <p class="modal-sub">Ingresá un nombre para el grupo personalizado</p>
-    <div class="dni-input-wrap">
-      <input
-        class="dni-input"
-        id="grupo-nuevo-input"
-        type="text"
-        placeholder="Ej: Grupo Jóvenes"
-        maxlength="60"
-        onkeydown="if(event.key==='Enter') guardarGrupoNuevo()"
-      >
-    </div>
-    <p class="error-msg" id="grupo-nuevo-error"></p>
-    <button class="btn-primary" id="grupo-nuevo-btn" onclick="guardarGrupoNuevo()">Crear grupo</button>
-    <button class="btn-cancel" onclick="closeGrupoNuevo()">Cancelar</button>
-  </div>
-</div>
-
-
-
 
 
 </div>
