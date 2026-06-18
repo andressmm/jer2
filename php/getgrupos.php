@@ -1,4 +1,5 @@
 <?php
+header("Access-Control-Allow-Origin: *");
 // getgrupos.php
 header('Content-Type: application/json; charset=utf-8');
 require_once "conexion.php";
