@@ -1387,7 +1387,7 @@ function handleDelegarOverlay(e) {
 var GRUPOS_PREDEFINIDOS = ["Bautismo", "ABC", "Liderazgo", "Casa de Paz", "Grupo Amigos", "Grupo Matrimonio"];
 
 var GRUPOS_ICONOS = {
-  "Bautismo": "🌊",
+  "Bautismo": "🙏",
   "ABC": "📖",
   "Liderazgo": "⭐",
   "Casa de Paz": "⛪",
