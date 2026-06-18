@@ -97,7 +97,7 @@ async function verificarDni() {
 
 /*---------------------------------------------------------------------*/
 
-const SCREENS = ["home", "dashboard", "troquel", "registro", "contactos","seguimiento"];
+const SCREENS = ["home", "dashboard", "troquel", "registro", "contactos","seguimiento","crecimiento"];
 
 function showScreen(name) {
   SCREENS.forEach(function(s) {
@@ -1375,4 +1375,251 @@ function closeDelegacion() {
 
 function handleDelegarOverlay(e) {
   if (e.target === document.getElementById("modal-delegar")) closeDelegacion();
+}
+
+
+
+
+
+/*---------------------------------------------------------------------*/
+/* === CRECIMIENTO === */
+
+var GRUPOS_PREDEFINIDOS = ["Bautismo", "ABC", "Liderazgo", "Casa de Paz", "Grupo Amigos", "Grupo Matrimonio"];
+
+var GRUPOS_ICONOS = {
+  "Bautismo": "🌊",
+  "ABC": "📖",
+  "Liderazgo": "⭐",
+  "Casa de Paz": "⛪",
+  "Grupo Amigos": "🤝",
+  "Grupo Matrimonio": "💍"
+};
+
+function showCrecimiento() {
+  showScreen("crecimiento");
+  cargarGruposCrecimiento();
+}
+
+function cargarGruposCrecimiento() {
+  document.getElementById("crecimiento-loading").style.display = "flex";
+  document.getElementById("crecimiento-grid").style.display    = "none";
+  document.getElementById("crecimiento-error").style.display   = "none";
+
+  fetch(BASE_URL + "/getgrupos.php")
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      document.getElementById("crecimiento-loading").style.display = "none";
+
+      var custom = (data && data.success && Array.isArray(data.data)) ? data.data : [];
+
+      var todos = GRUPOS_PREDEFINIDOS.slice();
+      custom.forEach(function(g) {
+        if (todos.indexOf(g) === -1) todos.push(g);
+      });
+
+      renderGruposCrecimiento(todos);
+    })
+    .catch(function(err) {
+      document.getElementById("crecimiento-loading").style.display = "none";
+      document.getElementById("crecimiento-error").style.display   = "flex";
+      document.getElementById("crecimiento-error-msg").textContent = "Error: " + err.message;
+    });
+}
+
+function renderGruposCrecimiento(grupos) {
+  var grid = document.getElementById("crecimiento-grid");
+  grid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:12px;";
+
+  var html = grupos.map(function(g) {
+    var icono = GRUPOS_ICONOS[g] || "🌱";
+    return (
+      '<button class="action-card" style="flex-direction:column;align-items:flex-start;gap:6px;text-align:left;" ' +
+        'onclick="abrirGrupoCrecimiento(\'' + g.replace(/'/g, "\\'") + '\')">' +
+        '<span style="font-size:24px;">' + icono + '</span>' +
+        '<span style="font-size:13px;font-weight:700;color:var(--text);">' + escHtml(g) + '</span>' +
+      '</button>'
+    );
+  }).join("");
+
+  html += (
+    '<button class="action-card" style="flex-direction:column;align-items:flex-start;gap:6px;text-align:left;' +
+      'border:1px dashed var(--muted);background:transparent;" onclick="openGrupoNuevo()">' +
+      '<span style="font-size:24px;">➕</span>' +
+      '<span style="font-size:13px;font-weight:700;color:var(--text-muted);">Crear grupo</span>' +
+    '</button>'
+  );
+
+  grid.innerHTML = html;
+  grid.style.display = "grid";
+}
+
+/*---------------------------------------------------------------------*/
+/* === DETALLE DE GRUPO (agregar / quitar contactos) === */
+
+var crecimientoGrupoActual = null;
+
+function abrirGrupoCrecimiento(grupo) {
+  crecimientoGrupoActual = grupo;
+
+  document.getElementById("crecimiento-grupo-titulo").textContent = grupo;
+  var lista = document.getElementById("crecimiento-grupo-lista");
+  lista.innerHTML =
+    '<div class="contactos-loading"><div class="loading-spinner"></div><p>Cargando contactos...</p></div>';
+
+  document.getElementById("modal-crecimiento-grupo").classList.add("open");
+
+  var user = getUser();
+  var dni  = user?.dni || "";
+
+  fetch(BASE_URL + "/getcrecimientocontactos.php?dni=" + encodeURIComponent(dni) + "&grupo=" + encodeURIComponent(grupo))
+    .then(function(res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      if (!data.success) throw new Error(data.message || "Sin datos");
+
+      var contactos = data.data || [];
+
+      if (contactos.length === 0) {
+        lista.innerHTML = '<div class="contactos-empty"><p>Sin contactos</p><span>Todavía no tenés contactos cargados.</span></div>';
+        return;
+      }
+
+      lista.innerHTML = contactos.map(function(c) {
+        var nombre   = (c.nombre   || "").trim();
+        var apellido = (c.apellido || "").trim();
+        var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
+        var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
+        var id       = c.id;
+        var asignado = !!c.asignado;
+
+        return (
+          '<div class="delegar-item" data-id="' + id + '" data-asignado="' + (asignado ? "1" : "0") + '" ' +
+            'onclick="toggleCrecimientoContacto(this)" style="' +
+            (asignado ? 'background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);' : '') +
+            '">' +
+            '<div class="contact-avatar" style="width:36px;height:36px;font-size:13px;flex-shrink:0">' + initials + '</div>' +
+            '<div class="contact-info">' +
+              '<p class="contact-fullname">' + escHtml(fullname) + '</p>' +
+            '</div>' +
+            '<span style="font-size:20px;">' + (asignado ? "✅" : "➕") + '</span>' +
+          '</div>'
+        );
+      }).join("");
+    })
+    .catch(function(err) {
+      lista.innerHTML = '<div class="contactos-empty"><p style="color:var(--rose)">Error al cargar</p><span>' + err.message + '</span></div>';
+    });
+}
+
+function toggleCrecimientoContacto(el) {
+  var id       = el.dataset.id;
+  var asignado = el.dataset.asignado === "1";
+  var accion   = asignado ? "quitar" : "agregar";
+  var user     = getUser();
+
+  var formData = new FormData();
+  formData.append("id_troquel", id);
+  formData.append("grupo",      crecimientoGrupoActual);
+  formData.append("dataentry",  user?.dni || "");
+  formData.append("accion",     accion);
+
+  fetch(BASE_URL + "/togglecrecimiento.php", {
+    method: "POST",
+    body:   formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success) {
+      var icono = el.querySelector("span:last-child");
+      if (accion === "agregar") {
+        el.dataset.asignado = "1";
+        el.style.background = "rgba(62,207,142,0.08)";
+        el.style.border     = "1px solid rgba(62,207,142,0.25)";
+        icono.textContent = "✅";
+        showToast(crecimientoGrupoActual + ": contacto agregado", true);
+      } else {
+        el.dataset.asignado = "0";
+        el.style.background = "";
+        el.style.border     = "";
+        icono.textContent = "➕";
+        showToast(crecimientoGrupoActual + ": contacto quitado", true);
+      }
+    } else {
+      showToast("Error: " + result.message);
+    }
+  })
+  .catch(function() {
+    showToast("Error de conexión");
+  });
+}
+
+function closeCrecimientoGrupo() {
+  document.getElementById("modal-crecimiento-grupo").classList.remove("open");
+  crecimientoGrupoActual = null;
+}
+
+function handleCrecimientoGrupoOverlay(e) {
+  if (e.target === document.getElementById("modal-crecimiento-grupo")) closeCrecimientoGrupo();
+}
+
+/*---------------------------------------------------------------------*/
+/* === CREAR GRUPO PERSONALIZADO === */
+
+function openGrupoNuevo() {
+  document.getElementById("grupo-nuevo-input").value = "";
+  document.getElementById("grupo-nuevo-error").textContent = "";
+  document.getElementById("modal-grupo-nuevo").classList.add("open");
+  setTimeout(function() { document.getElementById("grupo-nuevo-input").focus(); }, 300);
+}
+
+function closeGrupoNuevo() {
+  document.getElementById("modal-grupo-nuevo").classList.remove("open");
+}
+
+function handleGrupoNuevoOverlay(e) {
+  if (e.target === document.getElementById("modal-grupo-nuevo")) closeGrupoNuevo();
+}
+
+function guardarGrupoNuevo() {
+  var input   = document.getElementById("grupo-nuevo-input");
+  var nombre  = input.value.trim();
+  var errorEl = document.getElementById("grupo-nuevo-error");
+  var btn     = document.getElementById("grupo-nuevo-btn");
+
+  if (!nombre) {
+    errorEl.textContent = "Ingresá un nombre para el grupo.";
+    return;
+  }
+
+  btn.textContent = "⌛ Creando...";
+
+  var user = getUser();
+  var formData = new FormData();
+  formData.append("grupo",     nombre);
+  formData.append("dataentry", user?.dni || "");
+
+  fetch(BASE_URL + "/creargrupo.php", {
+    method: "POST",
+    body:   formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    btn.textContent = "Crear grupo";
+    if (result.success) {
+      closeGrupoNuevo();
+      showToast("Grupo creado", true);
+      cargarGruposCrecimiento();
+    } else {
+      errorEl.textContent = result.message || "No se pudo crear el grupo.";
+    }
+  })
+  .catch(function() {
+    btn.textContent = "Crear grupo";
+    errorEl.textContent = "Error de conexión con el servidor.";
+  });
 }

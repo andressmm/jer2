@@ -150,18 +150,19 @@
 
 
 
-         <button class="action-card card-purple" onclick="alert('En breve');">
-        <div class="action-icon ic-purple">
-          <i class="ti ti-plant-2"></i>
-        </div>
-        <div class="action-text">
-          <p class="action-title">Crecimiento</p>
-          <p class="action-desc">Seguí el progreso espiritual de tus contactos</p>
-        </div>
-        <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
-      </button>
+      <!-- crecimiento -->
+<button class="action-card card-purple" onclick="showCrecimiento()">
+  <div class="action-icon ic-purple">
+    <i class="ti ti-plant-2"></i>
+  </div>
+  <div class="action-text">
+    <p class="action-title">Crecimiento</p>
+    <p class="action-desc">Seguí el progreso espiritual de tus contactos</p>
+  </div>
+  <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
+</button>
 
-
+ <!-- panel de info -->
       
       <a href="panel.html" class="action-card card-red panel">
   <div class="action-icon ic-red">
@@ -570,6 +571,38 @@
     </div>
   </div>
 
+
+
+
+<!-- CRECIMIENTO SCREEN -->
+<div id="screen-crecimiento">
+  <div class="screen-header">
+    <button class="btn-back" onclick="showScreen('dashboard')">
+      <i class="ti ti-arrow-left"></i>
+    </button>
+    <div class="screen-header-text">
+      <p class="screen-title">Crecimiento</p>
+      <p class="screen-subtitle" id="crecimiento-subtitle">Seguí el progreso espiritual de tus contactos</p>
+    </div>
+  </div>
+
+  <div class="contactos-wrap" id="crecimiento-wrap">
+    <div class="contactos-loading" id="crecimiento-loading">
+      <div class="loading-spinner"></div>
+      <p>Cargando grupos...</p>
+    </div>
+    <div id="crecimiento-grid" style="display:none;"></div>
+    <div id="crecimiento-error" style="display:none;" class="contactos-empty">
+      <i class="ti ti-wifi-off" style="color:var(--rose)"></i>
+      <p style="color:var(--rose)">Error al cargar</p>
+      <span id="crecimiento-error-msg"></span>
+    </div>
+  </div>
+</div>
+
+
+
+
   <!-- GLOBO NOTIFICACIÓN -->
   <button class="seg-globo-notif" onclick="showUltimasActividades()">
     <span class="seg-punto-verde"></span>
@@ -720,6 +753,50 @@
   </div>
 </div>
 
+
+
+
+<!-- MODAL DETALLE DE GRUPO -->
+<div class="modal-overlay" id="modal-crecimiento-grupo" onclick="handleCrecimientoGrupoOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <p class="modal-title" id="crecimiento-grupo-titulo">Grupo</p>
+    <p class="modal-sub">Tocá un contacto para agregarlo o quitarlo del grupo</p>
+
+    <div id="crecimiento-grupo-lista" style="
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 55vh;
+      overflow-y: auto;
+    "></div>
+
+    <button class="btn-cancel" onclick="closeCrecimientoGrupo()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL CREAR GRUPO PERSONALIZADO -->
+<div class="modal-overlay" id="modal-grupo-nuevo" onclick="handleGrupoNuevoOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <p class="modal-title">Nuevo grupo</p>
+    <p class="modal-sub">Ingresá un nombre para el grupo personalizado</p>
+    <div class="dni-input-wrap">
+      <input
+        class="dni-input"
+        id="grupo-nuevo-input"
+        type="text"
+        placeholder="Ej: Grupo Jóvenes"
+        maxlength="60"
+        onkeydown="if(event.key==='Enter') guardarGrupoNuevo()"
+      >
+    </div>
+    <p class="error-msg" id="grupo-nuevo-error"></p>
+    <button class="btn-primary" id="grupo-nuevo-btn" onclick="guardarGrupoNuevo()">Crear grupo</button>
+    <button class="btn-cancel" onclick="closeGrupoNuevo()">Cancelar</button>
+  </div>
+</div>
 
 
 
