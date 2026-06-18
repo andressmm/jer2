@@ -571,6 +571,30 @@
     </div>
   </div>
 
+  <!-- GLOBO NOTIFICACIÓN -->
+  <button class="seg-globo-notif" onclick="showUltimasActividades()">
+    <span class="seg-punto-verde"></span>
+    <span class="seg-globo-texto">Mis últimas actividades</span>
+    <i class="ti ti-chevron-right" style="font-size:13px;opacity:0.6;"></i>
+  </button>
+
+  <div class="contactos-wrap" id="seguimiento-wrap">
+    <div class="contactos-loading" id="seguimiento-loading">
+      <div class="loading-spinner"></div>
+      <p>Cargando contactos...</p>
+    </div>
+    <div id="seguimiento-body" style="display:none;"></div>
+    <div id="seguimiento-empty" style="display:none;" class="contactos-empty">
+      <i class="ti ti-users-off"></i>
+      <p>Sin contactos</p>
+      <span>No tenés contactos cargados aún.</span>
+    </div>
+    <div id="seguimiento-error" style="display:none;" class="contactos-empty">
+      <i class="ti ti-wifi-off" style="color:var(--rose)"></i>
+      <p style="color:var(--rose)">Error al cargar</p>
+      <span id="seguimiento-error-msg"></span>
+    </div>
+  </div>
 </div>
 
 
@@ -596,35 +620,6 @@
       <i class="ti ti-wifi-off" style="color:var(--rose)"></i>
       <p style="color:var(--rose)">Error al cargar</p>
       <span id="crecimiento-error-msg"></span>
-    </div>
-  </div>
-</div>
-
-
-
-
-  <!-- GLOBO NOTIFICACIÓN -->
-  <button class="seg-globo-notif" onclick="showUltimasActividades()">
-    <span class="seg-punto-verde"></span>
-    <span class="seg-globo-texto">Mis últimas actividades</span>
-    <i class="ti ti-chevron-right" style="font-size:13px;opacity:0.6;"></i>
-  </button>
-
-  <div class="contactos-wrap" id="seguimiento-wrap">
-    <div class="contactos-loading" id="seguimiento-loading">
-      <div class="loading-spinner"></div>
-      <p>Cargando contactos...</p>
-    </div>
-    <div id="seguimiento-body" style="display:none;"></div>
-    <div id="seguimiento-empty" style="display:none;" class="contactos-empty">
-      <i class="ti ti-users-off"></i>
-      <p>Sin contactos</p>
-      <span>No tenés contactos cargados aún.</span>
-    </div>
-    <div id="seguimiento-error" style="display:none;" class="contactos-empty">
-      <i class="ti ti-wifi-off" style="color:var(--rose)"></i>
-      <p style="color:var(--rose)">Error al cargar</p>
-      <span id="seguimiento-error-msg"></span>
     </div>
   </div>
 </div>
