@@ -11,8 +11,8 @@ if ($dni === "" || $grupo === "") {
     exit;
 }
 
-$dniEsc   = mysqli_real_escape_string($conn, $dni);
-$grupoEsc = mysqli_real_escape_string($conn, $grupo);
+$dniEsc   = mysqli_real_escape_string($link, $dni);
+$grupoEsc = mysqli_real_escape_string($link, $grupo);
 
 $sql = "
     SELECT t.id, t.nombre, t.apellido,
@@ -25,10 +25,10 @@ $sql = "
     ORDER BY t.nombre ASC
 ";
 
-$result = mysqli_query($conn, $sql);
+$result = mysqli_query($link, $sql);
 
 if (!$result) {
-    error_log("getcrecimientocontactos.php error: " . mysqli_error($conn));
+    error_log("getcrecimientocontactos.php error: " . mysqli_error($link));
     echo json_encode(["success" => false, "message" => "Error al obtener contactos"]);
     exit;
 }

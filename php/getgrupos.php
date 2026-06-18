@@ -3,10 +3,10 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once "conexion.php";
 
-$result = mysqli_query($conn, "SELECT DISTINCT grupo FROM crecimiento ORDER BY grupo ASC");
+$result = mysqli_query($link, "SELECT DISTINCT grupo FROM crecimiento ORDER BY grupo ASC");
 
 if (!$result) {
-    error_log("getgrupos.php error: " . mysqli_error($conn));
+    error_log("getgrupos.php error: " . mysqli_error($link));
     echo json_encode(["success" => false, "message" => "Error al obtener grupos"]);
     exit;
 }

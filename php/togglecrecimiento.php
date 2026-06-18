@@ -13,13 +13,13 @@ if ($idTroquel === "" || $grupo === "" || $accion === "") {
     exit;
 }
 
-$idTroquelEsc = mysqli_real_escape_string($conn, $idTroquel);
-$grupoEsc     = mysqli_real_escape_string($conn, $grupo);
-$dataentryEsc = mysqli_real_escape_string($conn, $dataentry);
+$idTroquelEsc = mysqli_real_escape_string($link, $idTroquel);
+$grupoEsc     = mysqli_real_escape_string($link, $grupo);
+$dataentryEsc = mysqli_real_escape_string($link, $dataentry);
 
 if ($accion === "agregar") {
 
-    $check = mysqli_query($conn, "SELECT id FROM crecimiento WHERE id_troquel = '$idTroquelEsc' AND grupo = '$grupoEsc' LIMIT 1");
+    $check = mysqli_query($link, "SELECT id FROM crecimiento WHERE id_troquel = '$idTroquelEsc' AND grupo = '$grupoEsc' LIMIT 1");
     if ($check && mysqli_num_rows($check) > 0) {
         echo json_encode(["success" => true]);
         exit;
@@ -27,10 +27,10 @@ if ($accion === "agregar") {
 
     $sql = "INSERT INTO crecimiento (grupo, dataentry, id_troquel, timestamp) VALUES ('$grupoEsc', '$dataentryEsc', '$idTroquelEsc', NOW())";
 
-    if (mysqli_query($conn, $sql)) {
+    if (mysqli_query($link, $sql)) {
         echo json_encode(["success" => true]);
     } else {
-        error_log("togglecrecimiento.php (agregar) error: " . mysqli_error($conn));
+        error_log("togglecrecimiento.php (agregar) error: " . mysqli_error($link));
         echo json_encode(["success" => false, "message" => "Error al agregar al grupo"]);
     }
 
@@ -38,10 +38,10 @@ if ($accion === "agregar") {
 
     $sql = "DELETE FROM crecimiento WHERE id_troquel = '$idTroquelEsc' AND grupo = '$grupoEsc'";
 
-    if (mysqli_query($conn, $sql)) {
+    if (mysqli_query($link, $sql)) {
         echo json_encode(["success" => true]);
     } else {
-        error_log("togglecrecimiento.php (quitar) error: " . mysqli_error($conn));
+        error_log("togglecrecimiento.php (quitar) error: " . mysqli_error($link));
         echo json_encode(["success" => false, "message" => "Error al quitar del grupo"]);
     }
 
