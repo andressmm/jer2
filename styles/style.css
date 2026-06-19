@@ -480,8 +480,10 @@
 
   .ic-green  { background: rgba(62,207,142,0.12); color: var(--green); }
     .ic-yellow  { background: #5a5a2ede;color: rgba(213, 213, 17, 0.888); }
-  .ic-red  { background: #51312bde;color: rgba(213, 46, 17, 0.936); }
+  .ic-red  { background: #563732a8;color: rgb(213, 46, 17); }
   .ic-purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .ic-white  { background: #818181a8;color: rgb(255, 255, 255); }
+
   .action-card:hover.card-purple { border-color: rgba(139,92,246,0.2); }
   .action-card:hover.card-gold { border-color: rgba(201,162,39,0.2); }
   .action-card:hover.card-blue { border-color: rgba(74,130,228,0.15); }
