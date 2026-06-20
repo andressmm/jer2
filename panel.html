@@ -409,6 +409,45 @@
     line-height: 1.5;
   }
 
+  /* ── NAVEGACIÓN ACTIVIDADES ─────────────────────────────────────────────── */
+  .modal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .modal-nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 17px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .modal-nav-btn:hover:not(:disabled) {
+    background: rgba(201,162,39,0.15);
+    border-color: rgba(201,162,39,0.3);
+    color: var(--gold2);
+  }
+  .modal-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+  .modal-nav-counter {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .modal-nav-counter span {
+    color: var(--gold2);
+  }
+
   /* ── GRÁFICOS ───────────────────────────────────────────────────────────── */
   .charts-grid {
     display: grid;
@@ -689,16 +728,28 @@
 
 </div><!-- /panel-body -->
 
-<!-- ── MODAL ÚLTIMA ACTIVIDAD ──────────────────────────────────────────────── -->
+<!-- ── MODAL ACTIVIDADES ───────────────────────────────────────────────────── -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal">
     <button class="modal-close" id="modal-close-btn"><i class="ti ti-x"></i></button>
-    <div class="modal-tag">Última actividad</div>
+    <div class="modal-tag" id="modal-tag">Actividad</div>
     <div class="modal-name" id="modal-nombre"></div>
     <div class="modal-row"><strong>Contacto:</strong> <span id="modal-contacto"></span></div>
     <div class="modal-row"><strong>Medio:</strong> <span id="modal-medio"></span></div>
     <div class="modal-row"><strong>Fecha:</strong> <span id="modal-fecha"></span></div>
     <div class="modal-obs" id="modal-obs"></div>
+    <!-- Navegación: solo visible si hay más de 1 actividad -->
+    <div class="modal-nav" id="modal-nav" style="display:none;">
+      <button class="modal-nav-btn" id="modal-prev" onclick="navActividad(-1)">
+        <i class="ti ti-chevron-left"></i>
+      </button>
+      <div class="modal-nav-counter">
+        <span id="modal-idx-actual">1</span> / <span id="modal-idx-total">1</span>
+      </div>
+      <button class="modal-nav-btn" id="modal-next" onclick="navActividad(1)">
+        <i class="ti ti-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -733,20 +784,76 @@ modalOverlay.addEventListener("click", function(e) {
   if (e.target === modalOverlay) cerrarModal();
 });
 
+// Estado de navegación
+let _actividadesModal = [];
+let _actividadIdx     = 0;
+let _nombreModal      = "";
+
 function abrirModal(u) {
-  document.getElementById("modal-nombre").textContent   = u.nombre + " " + u.apellido;
-  document.getElementById("modal-contacto").textContent = ((u.contacto_nombre || "") + " " + (u.contacto_apellido || "")).trim() || "-";
-  document.getElementById("modal-medio").textContent    = u.ultima_medio || "-";
-  document.getElementById("modal-fecha").textContent    = formatFecha(u.ultima_actividad_fecha) || "-";
+  _nombreModal = u.nombre + " " + u.apellido;
+
+  // Construir array de actividades: si viene "actividades_detalle" usarlo,
+  // si no, armar uno con los campos de última actividad
+  if (u.actividades_detalle && u.actividades_detalle.length > 0) {
+    _actividadesModal = u.actividades_detalle;
+  } else {
+    _actividadesModal = [{
+      contacto_nombre:   u.contacto_nombre   || "",
+      contacto_apellido: u.contacto_apellido || "",
+      medio:             u.ultima_medio      || "-",
+      fecha:             u.ultima_actividad_fecha || null,
+      obs:               u.ultima_obs        || ""
+    }];
+  }
+
+  _actividadIdx = 0;
+  renderModalActividad();
+  modalOverlay.classList.add("open");
+}
+
+function renderModalActividad() {
+  const act   = _actividadesModal[_actividadIdx];
+  const total = _actividadesModal.length;
+
+  document.getElementById("modal-nombre").textContent = _nombreModal;
+  document.getElementById("modal-tag").textContent    = total > 1
+    ? "Actividades registradas"
+    : "Última actividad";
+
+  document.getElementById("modal-contacto").textContent =
+    ((act.contacto_nombre || "") + " " + (act.contacto_apellido || "")).trim() || "-";
+  document.getElementById("modal-medio").textContent =
+    act.medio || act.ultima_medio || "-";
+  document.getElementById("modal-fecha").textContent =
+    formatFecha(act.fecha || act.ultima_actividad_fecha) || "-";
 
   const obs = document.getElementById("modal-obs");
-  if (u.ultima_obs) {
-    obs.textContent   = u.ultima_obs;
+  const obsTexto = act.obs || act.ultima_obs || "";
+  if (obsTexto) {
+    obs.textContent   = obsTexto;
     obs.style.display = "block";
   } else {
     obs.style.display = "none";
   }
-  modalOverlay.classList.add("open");
+
+  // Navegación: solo mostrar si hay más de 1
+  const nav = document.getElementById("modal-nav");
+  if (total > 1) {
+    nav.style.display = "flex";
+    document.getElementById("modal-idx-actual").textContent = _actividadIdx + 1;
+    document.getElementById("modal-idx-total").textContent  = total;
+    document.getElementById("modal-prev").disabled = _actividadIdx === 0;
+    document.getElementById("modal-next").disabled = _actividadIdx === total - 1;
+  } else {
+    nav.style.display = "none";
+  }
+}
+
+function navActividad(dir) {
+  const nuevo = _actividadIdx + dir;
+  if (nuevo < 0 || nuevo >= _actividadesModal.length) return;
+  _actividadIdx = nuevo;
+  renderModalActividad();
 }
 
 function cerrarModal() {

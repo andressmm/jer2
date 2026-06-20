@@ -35,7 +35,9 @@ $usuarios = [];
 if ($resU) {
     while ($row = mysqli_fetch_assoc($resU)) {
         $dni = $row['dni'];
-        $queryUltima = "
+
+        // Traer TODAS las actividades del usuario (más recientes primero)
+        $queryActividades = "
             SELECT 
                 s.medio,
                 s.fecha,
@@ -47,14 +49,25 @@ if ($resU) {
             LEFT JOIN troquel t ON t.id = s.id_contacto
             WHERE s.dni_usuario = '$dni'
             ORDER BY s.fecha DESC, s.hora DESC
-            LIMIT 1
         ";
-        $resUltima = mysqli_query($link, $queryUltima);
-        if ($resUltima && mysqli_num_rows($resUltima) > 0) {
-            $ultima = mysqli_fetch_assoc($resUltima);
-            $row['ultima_actividad_fecha'] = $ultima['fecha'] . ' ' . $ultima['hora'];
+        $resActs = mysqli_query($link, $queryActividades);
+        $actividades_detalle = [];
+
+        if ($resActs && mysqli_num_rows($resActs) > 0) {
+            while ($act = mysqli_fetch_assoc($resActs)) {
+                $actividades_detalle[] = [
+                    'medio'             => $act['medio'],
+                    'fecha'             => $act['fecha'] . ' ' . $act['hora'],
+                    'obs'               => $act['observaciones'],
+                    'contacto_nombre'   => $act['contacto_nombre'],
+                    'contacto_apellido' => $act['contacto_apellido']
+                ];
+            }
+            // Campos planos de la más reciente (compatibilidad con frontend)
+            $ultima = $actividades_detalle[0];
+            $row['ultima_actividad_fecha'] = $ultima['fecha'];
             $row['ultima_medio']           = $ultima['medio'];
-            $row['ultima_obs']             = $ultima['observaciones'];
+            $row['ultima_obs']             = $ultima['obs'];
             $row['contacto_nombre']        = $ultima['contacto_nombre'];
             $row['contacto_apellido']      = $ultima['contacto_apellido'];
         } else {
@@ -64,6 +77,8 @@ if ($resU) {
             $row['contacto_nombre']        = null;
             $row['contacto_apellido']      = null;
         }
+
+        $row['actividades_detalle'] = $actividades_detalle;
         $usuarios[] = $row;
     }
 }
@@ -133,6 +148,22 @@ if ($resEdades) {
     }
 }
 
+// RANKING DECISIONES
+$queryDecisiones = "
+    SELECT decision, COUNT(*) as total
+    FROM troquel
+    WHERE decision IS NOT NULL AND decision != ''
+    GROUP BY decision
+    ORDER BY total DESC
+";
+$resDecisiones = mysqli_query($link, $queryDecisiones);
+$rankDecisiones = [];
+if ($resDecisiones) {
+    while ($row = mysqli_fetch_assoc($resDecisiones)) {
+        $rankDecisiones[] = $row;
+    }
+}
+
 echo json_encode([
     "totales" => [
         "usuarios"    => $totalUsuarios,
@@ -143,7 +174,8 @@ echo json_encode([
     "rankTroqueles"   => $rankTroqueles,
     "rankActividades" => $rankActividades,
     "rankOraciones"   => $rankOraciones,
-    "rankEdades"      => $rankEdades
+    "rankEdades"      => $rankEdades,
+    "rankDecisiones"  => $rankDecisiones
 ]);
 
 $link->close();
