@@ -14,7 +14,7 @@ if (!isset($_POST['id_contacto']) || !isset($_POST['dni_delegado'])) {
 $id_contacto  = mysqli_real_escape_string($link, $_POST['id_contacto']);
 $dni_delegado = mysqli_real_escape_string($link, $_POST['dni_delegado']);
 
-$sql = "UPDATE troquel SET delegado = '$dni_delegado' WHERE id = '$id_contacto'";
+$sql = "UPDATE troquel SET dataentry = '$dni_delegado' WHERE id = '$id_contacto'";
 $result = mysqli_query($link, $sql);
 
 if ($result) {

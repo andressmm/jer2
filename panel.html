@@ -585,6 +585,47 @@
     gap: 16px;
   }
 
+  /* ── LINK MAPA (nuevo) ────────────────────────────────────────────────────── */
+  .panel-link {
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .panel-link:hover {
+    background: var(--surface2);
+    border-color: rgba(201,162,39,0.2);
+  }
+  .panel-link-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .badge-nuevo {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #1a1406;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 99px;
+    animation: pulseNuevo 2s ease-in-out infinite;
+  }
+  @keyframes pulseNuevo {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,39,0.45); }
+    50%      { box-shadow: 0 0 0 5px rgba(201,162,39,0); }
+  }
 
 </style>
 </head>
@@ -636,6 +677,16 @@
         </div>
       </div>
     </div>
+
+    <!-- MAPA (nuevo) -->
+    <a href="mapa.html" class="panel-link">
+      <span class="panel-link-left">
+        <i class="ti ti-map-2"></i>
+        Mapa
+        <span class="badge-nuevo">Nuevo</span>
+      </span>
+      <i class="ti ti-chevron-right"></i>
+    </a>
 
     <!-- RESUMEN POR USUARIO -->
     <details class="panel-details">

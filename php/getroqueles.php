@@ -4,13 +4,11 @@ header("Content-Type: application/json");
 
 include('conexion.php');
 
-$dni_excluir = $_GET['dni'] ?? '';
 
 $query = "
-    SELECT id,nombre, apellido, dni, rol,direccion,lat,lng 
-    FROM users
-    WHERE dni != '$dni_excluir'
-    ORDER BY nombre ASC
+    SELECT id,nombre, apellido, direccion,lat,lng 
+    FROM troquel
+    WHERE lat != ''
 ";
 
 $result = mysqli_query($link, $query);

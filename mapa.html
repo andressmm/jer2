@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa · Jesús es Rey</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #161921;
+    --surface2:#1e2330;
+    --border:  rgba(255,255,255,0.06);
+    --gold:    #c9a227;
+    --gold2:   #e8c354;
+    --blue:    #4a82e4;
+    --green:   #3ecf8e;
+    --rose:    #e05c7a;
+    --text:    #f1ede4;
+    --muted:   #7a7f8e;
+  }
+
+  html, body {
+    font-family: "Outfit", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .panel-header {
+    background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  .panel-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(201,162,39,0.08);
+    pointer-events: none;
+  }
+  .panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .logo-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .logo-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(201,162,39,0.3);
+    animation: spinRing 12s linear infinite;
+  }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .logo-img {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    background: #fff;
+    padding: 2px;
+    display: block;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 1px rgba(201,162,39,0.25), 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .panel-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+  }
+  .panel-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+    position: relative;
+    z-index: 1;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+    position: relative; z-index: 1;
+    text-decoration: none;
+  }
+  .back-btn:hover { background: rgba(201,162,39,0.15); color: var(--gold); }
+
+  /* ── LEYENDA ── */
+  .leyenda {
+    position: absolute;
+    top: 80px;
+    right: 12px;
+    z-index: 900;
+    background: rgba(13,15,20,0.88);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 14px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 180px;
+  }
+  .leyenda-titulo {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .leyenda-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .leyenda-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .leyenda-dot.central  { background: var(--gold2); width: 16px; height: 16px; }
+  .leyenda-dot.sede     { background: #7aaaf5; }
+  .leyenda-dot.usuario  { background: #e05c7a; }
+
+  /* ── BARRA DE ESTADO (Carga rápida) ── */
+  .geocoding-bar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    background: rgba(13,15,20,0.92);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 8px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.3s;
+  }
+  .geocoding-bar.hidden { opacity: 0; pointer-events: none; }
+  .geocoding-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* ── MAPA ── */
+  #map {
+    width: 100%;
+    height: calc(100vh - 72px);
+  }
+
+  /* ── POPUP LEAFLET CUSTOM ── */
+  .leaflet-popup-content-wrapper {
+    background: #1e2330 !important;
+    border: 1px solid rgba(201,162,39,0.25) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+    color: #f1ede4 !important;
+    font-family: "Outfit", sans-serif !important;
+  }
+  .leaflet-popup-tip { background: #1e2330 !important; }
+  .leaflet-popup-content { margin: 14px 16px !important; }
+  .popup-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #f1ede4;
+    margin-bottom: 4px;
+  }
+  .popup-sub {
+    font-size: 11px;
+    color: #7a7f8e;
+    line-height: 1.5;
+  }
+  .popup-badge {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 99px;
+  }
+  .popup-badge.central  { background: rgba(201,162,39,0.18); color: #e8c354; }
+  .popup-badge.sede     { background: rgba(74,130,228,0.18);  color: #7aaaf5; }
+  .popup-badge.usuario  { background: rgba(224,92,122,0.18);  color: #e05c7a; }
+
+  /* ── TILES DARK ── */
+  .leaflet-tile { filter: brightness(0.55) saturate(0.7) hue-rotate(180deg) invert(1); }
+  .leaflet-container { background: #0d0f14; }
+</style>
+</head>
+<body>
+
+<div class="panel-header">
+  <div class="panel-header-left">
+    <div class="logo-wrap">
+      <div class="logo-ring"></div>
+      <img class="logo-img" src="source/jer.png" alt="Jesús es Rey">
+    </div>
+    <div>
+      <h1 class="panel-title">Panel general</h1>
+      <p class="panel-sub">Jesús es Rey · Resumen de usuarios y contactos</p>
+    </div>
+  </div>
+  <a class="back-btn" href="index.html" title="Volver">
+    <i class="ti ti-arrow-left"></i>
+  </a>
+</div>
+
+<div class="leyenda">
+  <div class="leyenda-titulo">Referencias</div>
+  <div class="leyenda-item">
+    <div class="leyenda-dot central"></div>
+    <span>Iglesia</span>
+  </div>
+  <div class="leyenda-item">
+    <div class="leyenda-dot sede"></div>
+    <span>Contacto sin seguimiento</span>
+  </div>
+  <div class="leyenda-item">
+    <div class="leyenda-dot usuario"></div>
+    <span>Usuarios app jer</span>
+  </div>
+</div>
+
+<div class="geocoding-bar" id="geocoding-bar">
+  <div class="geocoding-dot"></div>
+  <span id="geocoding-txt">Cargando datos...</span>
+</div>
+
+<div id="map"></div>
+
+<script>
+// ── MAPA BASE ─────────────────────────────────────────────────────────────────
+var map = L.map("map", {
+  center: [-31.3887, -58.0183],
+  zoom: 14,
+  zoomControl: false
+});
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 19
+}).addTo(map);
+
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+// ── ICONOS ────────────────────────────────────────────────────────────────────
+function crearIcono(color, size) {
+  var s = size || 18;
+  return L.divIcon({
+    className: "",
+    html: '<div style="' +
+      'width:' + s + 'px;height:' + s + 'px;' +
+      'background:' + color + ';' +
+      'border:2.5px solid rgba(255,255,255,0.85);' +
+      'border-radius:50%;' +
+      'box-shadow:0 0 0 3px ' + color + '44, 0 4px 12px rgba(0,0,0,0.5);' +
+      'cursor:pointer;' +
+    '"></div>',
+    iconSize:   [s, s],
+    iconAnchor: [s/2, s/2],
+    popupAnchor:[0, -(s/2 + 6)]
+  });
+}
+
+var iconoCentral = crearIcono("#e8c354", 30);
+var iconoSede    = crearIcono("#7aaaf5", 18);
+var iconoUsuario = crearIcono("#e05c7a", 16);
+
+// ── PUNTOS FIJOS ──────────────────────────────────────────────────────────────
+var puntosIglesia = [
+  { lat: -31.3887, lng: -58.0183, tipo: "central", titulo: "JESUS ES REY",       dir: "Las Heras 70, Concordia" }
+];
+
+puntosIglesia.forEach(function(p) {
+  var icono = p.tipo === "central" ? iconoCentral : iconoSede;
+  L.marker([p.lat, p.lng], { icon: icono })
+    .addTo(map)
+    .bindPopup(
+      '<div class="popup-title">' + p.titulo + '</div>' +
+      '<div class="popup-sub">' + p.dir + '</div>' +
+      '<div class="popup-badge ' + p.tipo + '">' +
+        (p.tipo === "central" ? "Iglesia" : "Punto de reunión") +
+      '</div>'
+    );
+});
+
+// Abrir popup central al cargar
+setTimeout(function() {
+  map.eachLayer(function(layer) {
+    if (layer instanceof L.Marker) {
+      var ll = layer.getLatLng();
+      if (Math.abs(ll.lat - (-31.3887)) < 0.001 && Math.abs(ll.lng - (-58.0183)) < 0.001) {
+        layer.openPopup();
+      }
+    }
+  });
+}, 600);
+
+// ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
+async function cargarDatos() {
+  var bar = document.getElementById("geocoding-bar");
+  var txt = document.getElementById("geocoding-txt");
+
+  try {
+    // Ejecutar ambas peticiones en paralelo
+    var [resUsuarios, resRoqueles] = await Promise.all([
+      fetch("https://www.cronomet.com.ar/jer/php/getusuarios.php"),
+      fetch("https://www.cronomet.com.ar/jer/php/getroqueles.php")
+    ]);
+
+    var dataUsuarios = await resUsuarios.json();
+    var dataRoqueles = await resRoqueles.json();
+
+    var usuarios = dataUsuarios.data || [];
+    var roqueles = dataRoqueles.data || [];
+
+    var usuariosAgregados = 0;
+    var roquelesAgregados = 0;
+
+    // 1. Inyectar Usuarios (Puntos Rosas)
+    usuarios.forEach(function(u) {
+      var latitude = parseFloat(u.lat);
+      var longitude = parseFloat(u.lng || u.lon);
+
+      if (!isNaN(latitude) && !isNaN(longitude)) {
+        var nombreCompleto = u.nombre + " " + u.apellido;
+        L.marker([latitude, longitude], { icon: iconoUsuario })
+          .addTo(map)
+          .bindPopup(
+            '<div class="popup-title">' + nombreCompleto + '</div>' +
+            '<div class="popup-sub">' +
+              '<strong style="color:var(--gold2)">Dirección:</strong> ' + (u.direccion || "—") +
+            '</div>' +
+            '<div class="popup-badge usuario">' + (u.rol || "Usuario") + '</div>'
+          );
+        usuariosAgregados++;
+      }
+    });
+
+    // 2. Inyectar Roqueles / Contactos (Puntos Celestes)
+    roqueles.forEach(function(r) {
+      var latitude = parseFloat(r.lat);
+      var longitude = parseFloat(r.lng || r.lon);
+
+      if (!isNaN(latitude) && !isNaN(longitude)) {
+        // Adaptación flexible si las propiedades se llaman distinto (ej: r.nombre, r.detalle)
+        var nombreContacto = r.nombre ? (r.nombre + " " + (r.apellido || "")) : (r.titulo || "Contacto");
+        L.marker([latitude, longitude], { icon: iconoSede })
+          .addTo(map)
+          .bindPopup(
+            '<div class="popup-title">' + nombreContacto + '</div>' +
+            '<div class="popup-sub">' +
+              '<strong style="color:var(--blue)">Dirección:</strong> ' + (r.direccion || "—") +
+            '</div>' +
+            '<div class="popup-badge sede">' + (r.tipo || "Contacto") + '</div>'
+          );
+        roquelesAgregados++;
+      }
+    });
+
+    // Actualizar barra de estado con la info combinada
+    txt.textContent = "✓ " + usuariosAgregados + " usuarios y " + roquelesAgregados + " contactos ubicados";
+    setTimeout(function() { bar.classList.add("hidden"); }, 2500);
+
+  } catch(err) {
+    txt.textContent = "Error al cargar los datos de la plataforma";
+    setTimeout(function() { bar.classList.add("hidden"); }, 2500);
+    console.error(err);
+  }
+}
+
+cargarDatos();
+</script>
+
+</body>
+</html>
