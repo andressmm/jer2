@@ -313,7 +313,7 @@ function crearIcono(color, size) {
 }
 
 var iconoCentral = crearIcono("#e8c354", 30);
-var iconoSede    = crearIcono("#7aaaf5", 18);
+var iconoSede    = crearIcono("#7aaaf5", 15);
 var iconoUsuario = crearIcono("#e05c7a", 16);
 
 // ── PUNTOS FIJOS ──────────────────────────────────────────────────────────────
@@ -380,6 +380,8 @@ async function cargarDatos() {
             '<div class="popup-title">' + nombreCompleto + '</div>' +
             '<div class="popup-sub">' +
               '<strong style="color:var(--gold2)">Dirección:</strong> ' + (u.direccion || "—") +
+              
+
             '</div>' +
             '<div class="popup-badge usuario">' + (u.rol || "Usuario") + '</div>'
           );
@@ -401,6 +403,9 @@ async function cargarDatos() {
             '<div class="popup-title">' + nombreContacto + '</div>' +
             '<div class="popup-sub">' +
               '<strong style="color:var(--blue)">Dirección:</strong> ' + (r.direccion || "—") +
+            '</div>' +
+               '<div class="popup-sub">' +
+              '<strong style="color:var(--blue)">Telefono:</strong> ' + (r.celular || "—") +
             '</div>' +
             '<div class="popup-badge sede">' + (r.tipo || "Contacto") + '</div>'
           );
