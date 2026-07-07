@@ -6,7 +6,7 @@ include('conexion.php');
 
 
 $query = "
-    SELECT id,nombre, apellido, direccion,celular,lat,lng 
+    SELECT id,nombre, apellido, direccion,celular,dataentry,lat,lng 
     FROM troquel
     WHERE lat != ''
 ";

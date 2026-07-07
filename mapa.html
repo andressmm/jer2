@@ -25,33 +25,41 @@
     --muted:   #7a7f8e;
   }
 
-html, body {
-  font-family: "Outfit", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  position: fixed;   /* evita el rebote/scroll en iOS */
-  top: 0; left: 0;
-  touch-action: none; /* evita pull-to-refresh y gestos raros */
-}
+  html, body {
+    font-family: "Outfit", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: fixed;   /* evita el rebote/scroll en iOS */
+    top: 0; left: 0;
+    touch-action: none; /* evita pull-to-refresh y gestos raros */
+  }
 
   /* ── HEADER ── */
-.panel-header {
-  position: fixed;    /* antes no tenía position */
-  top: 0; left: 0; right: 0;
-  height: 72px;
-  background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
-  padding: 28px 20px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  z-index: 1000;
-  overflow: hidden;
-}
- 
+  .panel-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 72px;
+    background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
+    padding: 28px 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  .panel-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(201,162,39,0.08);
+    pointer-events: none;
+  }
   .panel-header-left {
     display: flex;
     align-items: center;
@@ -156,6 +164,12 @@ html, body {
   .leyenda-dot.central  { background: var(--gold2); width: 16px; height: 16px; }
   .leyenda-dot.sede     { background: #7aaaf5; }
   .leyenda-dot.usuario  { background: #e05c7a; }
+  .leyenda-line {
+    width: 20px;
+    height: 0;
+    border-top: 2px dashed var(--gold);
+    flex-shrink: 0;
+  }
 
   /* ── BARRA DE ESTADO (Carga rápida) ── */
   .geocoding-bar {
@@ -185,16 +199,16 @@ html, body {
   }
 
   /* ── MAPA ── */
-#map {
-  position: absolute;  /* antes solo tenía width/height */
-  top: 72px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: auto;         /* reemplaza el calc(100vh - 72px) */
-  touch-action: pan-x pan-y; /* permite gestos normales solo dentro del mapa */
-}
+  #map {
+    position: absolute;
+    top: 72px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    touch-action: pan-x pan-y; /* permite gestos normales solo dentro del mapa */
+  }
 
   /* ── POPUP LEAFLET CUSTOM ── */
   .leaflet-popup-content-wrapper {
@@ -269,6 +283,10 @@ html, body {
     <div class="leyenda-dot usuario"></div>
     <span>Usuarios app jer</span>
   </div>
+  <div class="leyenda-item">
+    <div class="leyenda-line"></div>
+    <span>Quién lo cargó</span>
+  </div>
 </div>
 
 <div class="geocoding-bar" id="geocoding-bar">
@@ -334,18 +352,6 @@ puntosIglesia.forEach(function(p) {
     );
 });
 
-// Abrir popup central al cargar
-/*setTimeout(function() {
-  map.eachLayer(function(layer) {
-    if (layer instanceof L.Marker) {
-      var ll = layer.getLatLng();
-      if (Math.abs(ll.lat - (-31.3887)) < 0.001 && Math.abs(ll.lng - (-58.0183)) < 0.001) {
-        layer.openPopup();
-      }
-    }
-  });
-}, 600);
-*/
 // ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
 async function cargarDatos() {
   var bar = document.getElementById("geocoding-bar");
@@ -366,6 +372,10 @@ async function cargarDatos() {
 
     var usuariosAgregados = 0;
     var roquelesAgregados = 0;
+    var lineasAgregadas = 0;
+
+    // Diccionario para buscar coordenadas de usuario por DNI
+    var usuariosPorDni = {};
 
     // 1. Inyectar Usuarios (Puntos Rosas)
     usuarios.forEach(function(u) {
@@ -380,22 +390,24 @@ async function cargarDatos() {
             '<div class="popup-title">' + nombreCompleto + '</div>' +
             '<div class="popup-sub">' +
               '<strong style="color:var(--gold2)">Dirección:</strong> ' + (u.direccion || "—") +
-              
-
             '</div>' +
             '<div class="popup-badge usuario">' + (u.rol || "Usuario") + '</div>'
           );
         usuariosAgregados++;
+
+        // Guardamos coords indexadas por DNI para cruzarlas con troquel.dataentry
+        if (u.dni) {
+          usuariosPorDni[u.dni] = [latitude, longitude];
+        }
       }
     });
 
-    // 2. Inyectar Roqueles / Contactos (Puntos Celestes)
+    // 2. Inyectar Roqueles / Contactos (Puntos Celestes) + línea al usuario que lo cargó
     roqueles.forEach(function(r) {
       var latitude = parseFloat(r.lat);
       var longitude = parseFloat(r.lng || r.lon);
 
       if (!isNaN(latitude) && !isNaN(longitude)) {
-        // Adaptación flexible si las propiedades se llaman distinto (ej: r.nombre, r.detalle)
         var nombreContacto = r.nombre ? (r.nombre + " " + (r.apellido || "")) : (r.titulo || "Contacto");
         L.marker([latitude, longitude], { icon: iconoSede })
           .addTo(map)
@@ -404,17 +416,28 @@ async function cargarDatos() {
             '<div class="popup-sub">' +
               '<strong style="color:var(--blue)">Dirección:</strong> ' + (r.direccion || "—") +
             '</div>' +
-               '<div class="popup-sub">' +
+            '<div class="popup-sub">' +
               '<strong style="color:var(--blue)">Telefono:</strong> ' + (r.celular || "—") +
             '</div>' +
             '<div class="popup-badge sede">' + (r.tipo || "Contacto") + '</div>'
           );
         roquelesAgregados++;
+
+        // Si el DNI de dataentry coincide con un usuario ubicado, trazamos la línea
+        if (r.dataentry && usuariosPorDni[r.dataentry]) {
+          L.polyline([usuariosPorDni[r.dataentry], [latitude, longitude]], {
+            color: "#e0303f",
+            weight: 2,
+            opacity: 0.8,
+            dashArray: "4, 6"
+          }).addTo(map);
+          lineasAgregadas++;
+        }
       }
     });
 
     // Actualizar barra de estado con la info combinada
-    txt.textContent = "✓ " + usuariosAgregados + " usuarios y " + roquelesAgregados + " contactos ubicados";
+    txt.textContent = "✓ " + usuariosAgregados + " usuarios, " + roquelesAgregados + " contactos, " + lineasAgregadas + " conexiones";
     setTimeout(function() { bar.classList.add("hidden"); }, 2500);
 
   } catch(err) {
