@@ -45,15 +45,7 @@
     z-index: 1000;
     overflow: hidden;
   }
-  .panel-header::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    background: rgba(201,162,39,0.08);
-    pointer-events: none;
-  }
+ 
   .panel-header-left {
     display: flex;
     align-items: center;
@@ -246,7 +238,7 @@
       <p class="panel-sub">Jesús es Rey · Resumen de usuarios y contactos</p>
     </div>
   </div>
-  <a class="back-btn" href="index.html" title="Volver">
+  <a class="back-btn" href="panel.html" title="Volver">
     <i class="ti ti-arrow-left"></i>
   </a>
 </div>
@@ -259,7 +251,7 @@
   </div>
   <div class="leyenda-item">
     <div class="leyenda-dot sede"></div>
-    <span>Contacto sin seguimiento</span>
+    <span>Contacto</span>
   </div>
   <div class="leyenda-item">
     <div class="leyenda-dot usuario"></div>
@@ -331,7 +323,7 @@ puntosIglesia.forEach(function(p) {
 });
 
 // Abrir popup central al cargar
-setTimeout(function() {
+/*setTimeout(function() {
   map.eachLayer(function(layer) {
     if (layer instanceof L.Marker) {
       var ll = layer.getLatLng();
@@ -341,7 +333,7 @@ setTimeout(function() {
     }
   });
 }, 600);
-
+*/
 // ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
 async function cargarDatos() {
   var bar = document.getElementById("geocoding-bar");
