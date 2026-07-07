@@ -32,14 +32,14 @@ html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  position: fixed;   /* evita el rebote/scroll en iOS */
+  position: fixed;
   top: 0; left: 0;
-  touch-action: none; /* evita pull-to-refresh y gestos raros */
+  touch-action: none;
 }
 
   /* ── HEADER ── */
 .panel-header {
-  position: fixed;    /* antes no tenía position */
+  position: fixed;
   top: 0; left: 0; right: 0;
   height: 72px;
   background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
@@ -51,13 +51,14 @@ html, body {
   z-index: 1000;
   overflow: hidden;
 }
- 
+
   .panel-header-left {
     display: flex;
     align-items: center;
     gap: 12px;
     position: relative;
     z-index: 1;
+    min-width: 0;
   }
   .logo-wrap {
     position: relative;
@@ -91,6 +92,9 @@ html, body {
     line-height: 1.2;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .panel-sub {
     font-size: 10px;
@@ -98,8 +102,21 @@ html, body {
     margin-top: 1px;
     position: relative;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .back-btn {
+
+  .panel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .header-btn {
     width: 36px; height: 36px;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
@@ -109,11 +126,19 @@ html, body {
     color: var(--muted);
     font-size: 18px;
     flex-shrink: 0;
-    transition: background 0.15s, color 0.15s;
-    position: relative; z-index: 1;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
     text-decoration: none;
   }
-  .back-btn:hover { background: rgba(201,162,39,0.15); color: var(--gold); }
+  .header-btn:hover { background: rgba(201,162,39,0.15); color: var(--gold); }
+  .header-btn.active {
+    background: var(--rose);
+    border-color: var(--rose);
+    color: #fff;
+  }
+  .header-btn.active:hover {
+    background: var(--rose);
+    color: #fff;
+  }
 
   /* ── LEYENDA ── */
   .leyenda {
@@ -156,6 +181,14 @@ html, body {
   .leyenda-dot.central  { background: var(--gold2); width: 16px; height: 16px; }
   .leyenda-dot.sede     { background: #7aaaf5; }
   .leyenda-dot.usuario  { background: #e05c7a; }
+  .leyenda-dot.linea {
+    background: transparent;
+    border: none;
+    width: 16px;
+    height: 0;
+    border-top: 3px dashed #e0303f;
+    border-radius: 0;
+  }
 
   /* ── BARRA DE ESTADO (Carga rápida) ── */
   .geocoding-bar {
@@ -186,14 +219,14 @@ html, body {
 
   /* ── MAPA ── */
 #map {
-  position: absolute;  /* antes solo tenía width/height */
+  position: absolute;
   top: 72px;
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
-  height: auto;         /* reemplaza el calc(100vh - 72px) */
-  touch-action: pan-x pan-y; /* permite gestos normales solo dentro del mapa */
+  height: auto;
+  touch-action: pan-x pan-y;
 }
 
   /* ── POPUP LEAFLET CUSTOM ── */
@@ -250,9 +283,14 @@ html, body {
       <p class="panel-sub">Jesús es Rey · Resumen de usuarios y contactos</p>
     </div>
   </div>
-  <a class="back-btn" href="panel.html" title="Volver">
-    <i class="ti ti-arrow-left"></i>
-  </a>
+  <div class="panel-header-right">
+    <div class="header-btn" id="toggle-lineas-btn" title="Ver conexiones">
+      <i class="ti ti-route"></i>
+    </div>
+    <a class="header-btn" href="panel.html" title="Volver">
+      <i class="ti ti-arrow-left"></i>
+    </a>
+  </div>
 </div>
 
 <div class="leyenda">
@@ -268,6 +306,10 @@ html, body {
   <div class="leyenda-item">
     <div class="leyenda-dot usuario"></div>
     <span>Usuarios app jer</span>
+  </div>
+  <div class="leyenda-item">
+    <div class="leyenda-dot linea"></div>
+    <span>Conexión</span>
   </div>
 </div>
 
@@ -318,7 +360,7 @@ var iconoUsuario = crearIcono("#e05c7a", 16);
 
 // ── PUNTOS FIJOS ──────────────────────────────────────────────────────────────
 var puntosIglesia = [
-  { lat: -31.3887, lng: -58.0183, tipo: "central", titulo: "JESUS ES REY",       dir: "Las Heras 70, Concordia" }
+  { lat: -31.3887, lng: -58.0183, tipo: "central", titulo: "JESUS ES REY", dir: "Las Heras 70, Concordia" }
 ];
 
 puntosIglesia.forEach(function(p) {
@@ -334,25 +376,15 @@ puntosIglesia.forEach(function(p) {
     );
 });
 
-// Abrir popup central al cargar
-/*setTimeout(function() {
-  map.eachLayer(function(layer) {
-    if (layer instanceof L.Marker) {
-      var ll = layer.getLatLng();
-      if (Math.abs(ll.lat - (-31.3887)) < 0.001 && Math.abs(ll.lng - (-58.0183)) < 0.001) {
-        layer.openPopup();
-      }
-    }
-  });
-}, 600);
-*/
+// Grupo que contiene todas las líneas de conexión — arranca oculto (no agregado al mapa)
+var grupoLineas = L.layerGroup();
+
 // ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
 async function cargarDatos() {
   var bar = document.getElementById("geocoding-bar");
   var txt = document.getElementById("geocoding-txt");
 
   try {
-    // Ejecutar ambas peticiones en paralelo
     var [resUsuarios, resRoqueles] = await Promise.all([
       fetch("https://www.cronomet.com.ar/jer/php/getusuarios.php"),
       fetch("https://www.cronomet.com.ar/jer/php/getroqueles.php")
@@ -366,6 +398,10 @@ async function cargarDatos() {
 
     var usuariosAgregados = 0;
     var roquelesAgregados = 0;
+    var lineasAgregadas = 0;
+
+    // Diccionario para buscar coordenadas de usuario por DNI
+    var usuariosPorDni = {};
 
     // 1. Inyectar Usuarios (Puntos Rosas)
     usuarios.forEach(function(u) {
@@ -380,22 +416,24 @@ async function cargarDatos() {
             '<div class="popup-title">' + nombreCompleto + '</div>' +
             '<div class="popup-sub">' +
               '<strong style="color:var(--gold2)">Dirección:</strong> ' + (u.direccion || "—") +
-              
-
             '</div>' +
             '<div class="popup-badge usuario">' + (u.rol || "Usuario") + '</div>'
           );
         usuariosAgregados++;
+
+        // Guardamos coords indexadas por DNI para cruzar con troquel.dataentry
+        if (u.dni) {
+          usuariosPorDni[u.dni] = [latitude, longitude];
+        }
       }
     });
 
-    // 2. Inyectar Roqueles / Contactos (Puntos Celestes)
+    // 2. Inyectar Roqueles / Contactos (Puntos Celestes) + línea al usuario que lo cargó
     roqueles.forEach(function(r) {
       var latitude = parseFloat(r.lat);
       var longitude = parseFloat(r.lng || r.lon);
 
       if (!isNaN(latitude) && !isNaN(longitude)) {
-        // Adaptación flexible si las propiedades se llaman distinto (ej: r.nombre, r.detalle)
         var nombreContacto = r.nombre ? (r.nombre + " " + (r.apellido || "")) : (r.titulo || "Contacto");
         L.marker([latitude, longitude], { icon: iconoSede })
           .addTo(map)
@@ -404,17 +442,27 @@ async function cargarDatos() {
             '<div class="popup-sub">' +
               '<strong style="color:var(--blue)">Dirección:</strong> ' + (r.direccion || "—") +
             '</div>' +
-               '<div class="popup-sub">' +
+            '<div class="popup-sub">' +
               '<strong style="color:var(--blue)">Telefono:</strong> ' + (r.celular || "—") +
             '</div>' +
             '<div class="popup-badge sede">' + (r.tipo || "Contacto") + '</div>'
           );
         roquelesAgregados++;
+
+        // Si el DNI de dataentry coincide con un usuario ubicado, trazamos la línea
+        if (r.dataentry && usuariosPorDni[r.dataentry]) {
+          L.polyline([usuariosPorDni[r.dataentry], [latitude, longitude]], {
+            color: "#e0303f",
+            weight: 2.5,
+            opacity: 0.8,
+            dashArray: "4, 6"
+          }).addTo(grupoLineas);
+          lineasAgregadas++;
+        }
       }
     });
 
-    // Actualizar barra de estado con la info combinada
-    txt.textContent = "✓ " + usuariosAgregados + " usuarios y " + roquelesAgregados + " contactos ubicados";
+    txt.textContent = "✓ " + usuariosAgregados + " usuarios, " + roquelesAgregados + " contactos, " + lineasAgregadas + " conexiones";
     setTimeout(function() { bar.classList.add("hidden"); }, 2500);
 
   } catch(err) {
@@ -425,6 +473,23 @@ async function cargarDatos() {
 }
 
 cargarDatos();
+
+// ── TOGGLE DE LÍNEAS DE CONEXIÓN (botón en el header) ─────────────────────────
+var btnLineas = document.getElementById("toggle-lineas-btn");
+var lineasVisibles = false;
+
+btnLineas.addEventListener("click", function() {
+  if (lineasVisibles) {
+    map.removeLayer(grupoLineas);
+    btnLineas.classList.remove("active");
+    btnLineas.title = "Ver conexiones";
+  } else {
+    map.addLayer(grupoLineas);
+    btnLineas.classList.add("active");
+    btnLineas.title = "Ocultar conexiones";
+  }
+  lineasVisibles = !lineasVisibles;
+});
 </script>
 
 </body>
