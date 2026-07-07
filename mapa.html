@@ -25,26 +25,32 @@
     --muted:   #7a7f8e;
   }
 
-  html, body {
-    font-family: "Outfit", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100%;
-    overflow: hidden;
-  }
+html, body {
+  font-family: "Outfit", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;   /* evita el rebote/scroll en iOS */
+  top: 0; left: 0;
+  touch-action: none; /* evita pull-to-refresh y gestos raros */
+}
 
   /* ── HEADER ── */
-  .panel-header {
-    background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
-    padding: 18px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    position: relative;
-    z-index: 1000;
-    overflow: hidden;
-  }
+.panel-header {
+  position: fixed;    /* antes no tenía position */
+  top: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(140deg, #1c2e48 0%, #2a4268 100%);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 1000;
+  overflow: hidden;
+}
  
   .panel-header-left {
     display: flex;
@@ -179,10 +185,16 @@
   }
 
   /* ── MAPA ── */
-  #map {
-    width: 100%;
-    height: calc(100vh - 72px);
-  }
+#map {
+  position: absolute;  /* antes solo tenía width/height */
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;         /* reemplaza el calc(100vh - 72px) */
+  touch-action: pan-x pan-y; /* permite gestos normales solo dentro del mapa */
+}
 
   /* ── POPUP LEAFLET CUSTOM ── */
   .leaflet-popup-content-wrapper {
