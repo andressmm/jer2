@@ -284,9 +284,6 @@ html, body {
     </div>
   </div>
   <div class="panel-header-right">
-    <div class="header-btn" id="toggle-lineas-btn" title="Ver conexiones">
-      <i class="ti ti-route"></i>
-    </div>
     <a class="header-btn" href="panel.html" title="Volver">
       <i class="ti ti-arrow-left"></i>
     </a>
@@ -309,7 +306,7 @@ html, body {
   </div>
   <div class="leyenda-item">
     <div class="leyenda-dot linea"></div>
-    <span>Conexión</span>
+    <span>Conexión (clic en usuario)</span>
   </div>
 </div>
 
@@ -376,8 +373,9 @@ puntosIglesia.forEach(function(p) {
     );
 });
 
-// Grupo que contiene todas las líneas de conexión — arranca oculto (no agregado al mapa)
-var grupoLineas = L.layerGroup();
+// Grupo que contiene las líneas actualmente visibles (solo las del usuario clickeado)
+var grupoLineasActivas = L.layerGroup().addTo(map);
+var usuarioSeleccionado = null;
 
 // ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
 async function cargarDatos() {
@@ -400,8 +398,10 @@ async function cargarDatos() {
     var roquelesAgregados = 0;
     var lineasAgregadas = 0;
 
-    // Diccionario para buscar coordenadas de usuario por DNI
+    // Diccionario para buscar coordenadas y datos de usuario por DNI
     var usuariosPorDni = {};
+    // Diccionario para acumular las líneas asociadas a cada usuario (por DNI)
+    var lineasPorUsuario = {};
 
     // 1. Inyectar Usuarios (Puntos Rosas)
     usuarios.forEach(function(u) {
@@ -410,7 +410,7 @@ async function cargarDatos() {
 
       if (!isNaN(latitude) && !isNaN(longitude)) {
         var nombreCompleto = u.nombre + " " + u.apellido;
-        L.marker([latitude, longitude], { icon: iconoUsuario })
+        var marcadorUsuario = L.marker([latitude, longitude], { icon: iconoUsuario })
           .addTo(map)
           .bindPopup(
             '<div class="popup-title">' + nombreCompleto + '</div>' +
@@ -424,6 +424,23 @@ async function cargarDatos() {
         // Guardamos coords indexadas por DNI para cruzar con troquel.dataentry
         if (u.dni) {
           usuariosPorDni[u.dni] = [latitude, longitude];
+          lineasPorUsuario[u.dni] = [];
+
+          // Al hacer clic en el usuario, mostramos solo sus líneas de conexión
+          marcadorUsuario.on("click", function() {
+            grupoLineasActivas.clearLayers();
+
+            // Si se vuelve a clickear el mismo usuario, solo cerramos las líneas
+            if (usuarioSeleccionado === u.dni) {
+              usuarioSeleccionado = null;
+              return;
+            }
+
+            usuarioSeleccionado = u.dni;
+            (lineasPorUsuario[u.dni] || []).forEach(function(linea) {
+              grupoLineasActivas.addLayer(linea);
+            });
+          });
         }
       }
     });
@@ -449,14 +466,17 @@ async function cargarDatos() {
           );
         roquelesAgregados++;
 
-        // Si el DNI de dataentry coincide con un usuario ubicado, trazamos la línea
+        // Si el DNI de dataentry coincide con un usuario ubicado, preparamos la línea
+        // (no se agrega al mapa todavía: se agrega recién al hacer clic en el usuario)
         if (r.dataentry && usuariosPorDni[r.dataentry]) {
-          L.polyline([usuariosPorDni[r.dataentry], [latitude, longitude]], {
+          var linea = L.polyline([usuariosPorDni[r.dataentry], [latitude, longitude]], {
             color: "#e0303f",
             weight: 2.5,
             opacity: 0.8,
             dashArray: "4, 6"
-          }).addTo(grupoLineas);
+          });
+          if (!lineasPorUsuario[r.dataentry]) lineasPorUsuario[r.dataentry] = [];
+          lineasPorUsuario[r.dataentry].push(linea);
           lineasAgregadas++;
         }
       }
@@ -474,21 +494,10 @@ async function cargarDatos() {
 
 cargarDatos();
 
-// ── TOGGLE DE LÍNEAS DE CONEXIÓN (botón en el header) ─────────────────────────
-var btnLineas = document.getElementById("toggle-lineas-btn");
-var lineasVisibles = false;
-
-btnLineas.addEventListener("click", function() {
-  if (lineasVisibles) {
-    map.removeLayer(grupoLineas);
-    btnLineas.classList.remove("active");
-    btnLineas.title = "Ver conexiones";
-  } else {
-    map.addLayer(grupoLineas);
-    btnLineas.classList.add("active");
-    btnLineas.title = "Ocultar conexiones";
-  }
-  lineasVisibles = !lineasVisibles;
+// Al hacer clic en el mapa (fuera de un marcador), ocultamos las líneas activas
+map.on("click", function() {
+  grupoLineasActivas.clearLayers();
+  usuarioSeleccionado = null;
 });
 </script>
 
