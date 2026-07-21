@@ -119,7 +119,7 @@ const us = JSON.parse(localStorage.getItem("user"));
 
 
   console.log(us.rol);
-if ((us.rol === "Pastor" || us.rol === "Ay.Pastor")  && name === "dashboard") {
+if ((us.rol === "Pastor" || us.rol === "App")  && name === "dashboard") {
     const pastores = document.querySelector(".pastores");
     pastores.style.display = "flex";
 }
