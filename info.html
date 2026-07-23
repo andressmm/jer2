@@ -886,79 +886,17 @@ function handleModalOverlay(e) {
 
 /* ── DELEGACIÓN ──────────────────────────────────────────────────────────────── */
 
-// Actualiza el botón del footer según si ya tiene delegado o no
+// El botón siempre muestra "Delegar contacto" sin importar el estado
 function actualizarBtnDelegar(dataentry) {
-  var btn = document.getElementById("md-btn-delegar");
-  var txt = document.getElementById("md-btn-delegar-txt");
-  var esDelegado = dataentry && dataentry !== "" && dataentry !== "0" && dataentry !== "null";
-
-  if (esDelegado) {
-    btn.className = "btn-delegar delegado";
-    txt.textContent = "Ver delegado";
-  } else {
-    btn.className = "btn-delegar";
-    txt.textContent = "Delegar contacto";
-  }
+  document.getElementById("md-btn-delegar").className      = "btn-delegar";
+  document.getElementById("md-btn-delegar-txt").textContent = "Delegar contacto";
 }
 
-// Click en el botón del footer
+// Click en el botón del footer — siempre abre el listado para delegar
 function accionDelegar() {
-  var id       = detalleActual.id;
-  var nombre   = (detalleActual.apellido + " " + detalleActual.nombre).trim();
-  var dataentry = detalleActual.dataentry;
-  var esDelegado = dataentry && dataentry !== "" && dataentry !== "0" && dataentry !== "null";
-
-  if (esDelegado) {
-    // Mostrar a quién está delegado
-    mostrarDelegadoActual(nombre, dataentry);
-  } else {
-    // Abrir lista para delegar
-    abrirModalDelegacion(id, nombre);
-  }
-}
-
-// Muestra el modal con el delegado actual (modo lectura)
-function mostrarDelegadoActual(nombreContacto, dniDelegado) {
-  document.getElementById("delegar-titulo").textContent = "Delegado a";
-  document.getElementById("delegar-sub").textContent    = nombreContacto;
-
-  var lista = document.getElementById("delegar-lista");
-  lista.innerHTML = '<div class="modal-loading"><div class="spinner"></div>Buscando...</div>';
-
-  document.getElementById("modal-delegar").classList.add("open");
-
-  fetch(BASE_URL + "/getusuarios.php")
-    .then(function(r) { return r.json(); })
-    .then(function(resp) {
-      var usuarios = resp.data || resp || [];
-      var u = usuarios.find(function(u) {
-        return (u.dni || u.DNI || "").toString().trim() === String(dniDelegado).trim();
-      });
-
-      var nombreDelegado = u
-        ? ((u.nombre || "") + " " + (u.apellido || "")).trim()
-        : "DNI " + dniDelegado;
-
-      var rolDelegado = u ? (u.rol || "") : "";
-
-      lista.innerHTML =
-        '<div class="delegado-actual">' +
-          '<span class="delegado-actual-icon">⏩️</span>' +
-          '<div>' +
-            '<p class="delegado-actual-nombre">' + esc(nombreDelegado) + '</p>' +
-            '<p class="delegado-actual-dni">' + (rolDelegado ? rolDelegado + ' · ' : '') + 'DNI ' + esc(String(dniDelegado)) + '</p>' +
-          '</div>' +
-        '</div>';
-    })
-    .catch(function() {
-      lista.innerHTML =
-        '<div class="delegado-actual">' +
-          '<span class="delegado-actual-icon">⏩️</span>' +
-          '<div>' +
-            '<p class="delegado-actual-nombre">DNI ' + esc(String(dniDelegado)) + '</p>' +
-          '</div>' +
-        '</div>';
-    });
+  var id     = detalleActual.id;
+  var nombre = (detalleActual.apellido + " " + detalleActual.nombre).trim();
+  abrirModalDelegacion(id, nombre);
 }
 
 // Abre el modal con lista de usuarios para delegar
