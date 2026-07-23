@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Pastor · Jesús es Rey</title>
+<title>Panel · Jesús es Rey</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -41,6 +42,7 @@
     gap: 12px;
     position: relative;
     overflow: hidden;
+    height: 72px;
   }
   .panel-header-left {
     display: flex;
@@ -129,7 +131,7 @@
   /* ── STATS GRID ─────────────────────────────────────────────────────────── */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
   .stat-card {
@@ -148,6 +150,7 @@
   }
   .stat-icon.gold  { background: rgba(201,162,39,0.12); color: var(--gold2); }
   .stat-icon.blue  { background: rgba(74,130,228,0.12); color: #7aaaf5; }
+  .stat-icon.green { background: rgba(62,207,142,0.12); color: var(--green); }
   .stat-value {
     font-size: 26px;
     font-weight: 800;
@@ -162,9 +165,368 @@
     line-height: 1.3;
   }
 
-  /* ── DETAILS / SUMMARY POR FECHA ───────────────────────────────────────── */
-  .fecha-details { background: transparent; }
-  .fecha-summary {
+  /* ── TABLA USUARIOS ─────────────────────────────────────────────────────── */
+  .tabla-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .tabla-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .tabla-wrap thead tr {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tabla-wrap thead th {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    text-align: left;
+  }
+  .tabla-wrap thead th.col-num  { text-align: center; width: 100px; }
+  .tabla-wrap thead th.col-lupa { text-align: center; width: 56px; }
+
+  .tabla-wrap tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .tabla-wrap tbody tr:last-child { border-bottom: none; }
+  .tabla-wrap tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+  .tabla-wrap td {
+    padding: 14px 16px;
+    vertical-align: middle;
+  }
+  .tabla-wrap td.col-num  { text-align: center; padding: 14px 8px; }
+  .tabla-wrap td.col-lupa { text-align: center; padding: 14px 8px; }
+
+  .user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-rol {
+    display: inline-block;
+    background: rgba(201,162,39,0.12);
+    color: var(--gold2);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-top: 4px;
+  }
+  .stat-num {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    display: block;
+  }
+  .stat-num-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+    display: none; /* solo visible en mobile */
+  }
+
+  .lupa-btn {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: rgba(74,130,228,0.1);
+    border: 1px solid rgba(74,130,228,0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: #7aaaf5;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .lupa-btn:hover {
+    background: rgba(74,130,228,0.22);
+    border-color: rgba(74,130,228,0.4);
+  }
+
+  /* ── TABLA MOBILE (≤ 500px) ─────────────────────────────────────────────── */
+  @media (max-width: 500px) {
+    /* Ocultamos el thead y convertimos cada fila en un bloque tipo card */
+    .tabla-wrap thead { display: none; }
+
+    .tabla-wrap table,
+    .tabla-wrap tbody,
+    .tabla-wrap tr,
+    .tabla-wrap td { display: block; width: 100%; }
+
+    .tabla-wrap tbody tr {
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 12px;
+      row-gap: 0;
+      align-items: center;
+    }
+
+    /* Columna usuario: ocupa toda la fila superior izquierda */
+    .tabla-wrap td:nth-child(1) {
+      grid-column: 1;
+      grid-row: 1;
+      padding: 0 0 10px 0;
+    }
+
+    /* Troqueles + Actividades: fila inferior, lado izquierdo, en fila */
+    .tabla-wrap td.col-num {
+      grid-row: 2;
+      padding: 0;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tabla-wrap td.col-num:nth-child(2) { grid-column: 1; }
+    .tabla-wrap td.col-num:nth-child(3) { grid-column: 1; margin-left: 32px; }
+
+    /* Como nth-child con display grid no funciona así para los 2 en una fila,
+       usamos un truco: los metemos en flexbox en la fila 2 */
+    .tabla-wrap tbody tr {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+    }
+
+    /* Reordenamos con order */
+    .tabla-wrap td:nth-child(1) { order: 1; }
+    .tabla-wrap td:nth-child(2) { order: 2; }
+    .tabla-wrap td:nth-child(3) { order: 3; }
+    .tabla-wrap td:nth-child(4) { order: 4; }
+
+    /* Los dos numeros van en fila 2 col 1, la lupa en col 2 rows 1-2 */
+    .tabla-wrap td:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .tabla-wrap td:nth-child(2) { grid-column: 1; grid-row: 2; padding: 8px 0 0 0; text-align: left; }
+    .tabla-wrap td:nth-child(3) { grid-column: 1; grid-row: 2; padding: 8px 0 0 0; text-align: left; }
+    .tabla-wrap td:nth-child(4) { grid-column: 2; grid-row: 1 / 3; text-align: right; padding: 0; align-self: center; }
+
+    /* Problema: dos td en la misma celda del grid no funciona.
+       Solución: wrap los 2 nums en un div .nums-wrap generado por JS */
+    .nums-wrap {
+      display: flex;
+      gap: 20px;
+      grid-column: 1;
+      grid-row: 2;
+      padding-top: 10px;
+      align-items: center;
+    }
+    .nums-wrap .num-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* En mobile ocultamos los td individuales col-num y usamos .nums-wrap */
+    .tabla-wrap td.col-num { display: none; }
+    .tabla-wrap td.col-lupa { grid-column: 2; grid-row: 1 / 3; padding: 0; text-align: right; }
+
+    .stat-num-label { display: block; }
+    .stat-num { font-size: 16px; }
+  }
+
+  /* ── MODAL ──────────────────────────────────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface2);
+    border: 1px solid rgba(201,162,39,0.25);
+    border-radius: 18px;
+    padding: 22px 20px;
+    width: 100%;
+    max-width: 320px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .modal-close:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+  .modal-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--gold2);
+    margin-bottom: 6px;
+  }
+  .modal-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding-right: 24px;
+  }
+  .modal-row {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    align-items: flex-start;
+  }
+  .modal-row strong { color: var(--text); font-weight: 600; flex-shrink: 0; }
+  .modal-obs {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* ── NAVEGACIÓN ACTIVIDADES ─────────────────────────────────────────────── */
+  .modal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .modal-nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 17px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .modal-nav-btn:hover:not(:disabled) {
+    background: rgba(201,162,39,0.15);
+    border-color: rgba(201,162,39,0.3);
+    color: var(--gold2);
+  }
+  .modal-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+  .modal-nav-counter {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+  .modal-nav-counter span {
+    color: var(--gold2);
+  }
+
+  /* ── GRÁFICOS ───────────────────────────────────────────────────────────── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) {
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  /* ── ORACIONES ──────────────────────────────────────────────────────────── */
+  .oracion-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+  }
+  .oracion-item:last-child { border-bottom: none; }
+  .oracion-rank { font-size: 11px; font-weight: 700; color: var(--muted); width: 20px; flex-shrink: 0; text-align: center; }
+  .oracion-rank.top { color: var(--gold2); }
+  .oracion-bar-wrap { flex: 1; }
+  .oracion-motivo { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+  .oracion-bar-bg { height: 5px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .oracion-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--gold), var(--gold2)); transition: width 0.6s ease; }
+  .oracion-count { font-size: 13px; font-weight: 800; color: var(--gold2); flex-shrink: 0; min-width: 28px; text-align: right; }
+
+  /* ── EDADES ─────────────────────────────────────────────────────────────── */
+  .edad-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .edad-item:last-child { border-bottom: none; }
+  .edad-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .edad-bar-wrap { flex: 1; }
+  .edad-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+  .edad-bar-bg { height: 5px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .edad-bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .edad-count { font-size: 13px; font-weight: 800; flex-shrink: 0; min-width: 28px; text-align: right; }
+
+  /* ── DECISIONES ─────────────────────────────────────────────────────────── */
+  .decision-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .decision-item:last-child { border-bottom: none; }
+  .decision-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .decision-bar-wrap { flex: 1; }
+  .decision-label { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .decision-bar-bg { height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
+  .decision-bar-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+  .decision-count { font-size: 22px; font-weight: 800; flex-shrink: 0; min-width: 36px; text-align: right; }
+  .decision-pct { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+
+  /* ── LOADING ────────────────────────────────────────────────────────────── */
+  .loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
+  .loading i { font-size: 32px; display: block; margin-bottom: 12px; animation: spinLoad 1s linear infinite; }
+  @keyframes spinLoad { to { transform: rotate(360deg); } }
+
+  /* ── EMPTY ──────────────────────────────────────────────────────────────── */
+  .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
+
+  /* ── BLOQUEADO ──────────────────────────────────────────────────────────── */
+  .bloqueado { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 20px; }
+  .bloqueado i { font-size: 56px; color: var(--rose); margin-bottom: 20px; }
+  .bloqueado h2 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  .bloqueado p { font-size: 13px; color: var(--muted); }
+
+
+
+/* ── DETAILS / SUMMARY ──────────────────────────────────────────────────── */
+  .panel-details {
+    background: transparent;
+  }
+  .panel-summary {
     list-style: none;
     cursor: pointer;
     background: var(--surface);
@@ -174,78 +536,37 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
     transition: background 0.15s, border-color 0.15s;
     user-select: none;
   }
-  .fecha-summary::-webkit-details-marker { display: none; }
-  .fecha-summary:hover {
+  .panel-summary::-webkit-details-marker { display: none; }
+  .panel-summary:hover {
     background: var(--surface2);
     border-color: rgba(201,162,39,0.2);
-  }
-  .fecha-summary-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-  }
-  .fecha-icon {
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    background: rgba(201,162,39,0.12);
-    color: var(--gold2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px;
-    flex-shrink: 0;
-  }
-  .fecha-info { min-width: 0; }
-  .fecha-label {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    white-space: nowrap;
-  }
-  .fecha-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
-  .fecha-summary-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-  .fecha-badge {
-    background: rgba(201,162,39,0.14);
-    color: var(--gold2);
-    font-size: 13px;
-    font-weight: 800;
-    padding: 5px 12px;
-    border-radius: 99px;
-    min-width: 36px;
-    text-align: center;
   }
   .summary-arrow {
     font-size: 16px;
     color: var(--muted);
     transition: transform 0.25s ease;
   }
-  .fecha-details[open] .fecha-summary {
+  .panel-details[open] .panel-summary {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     border-color: rgba(201,162,39,0.2);
   }
-  .fecha-details[open] .summary-arrow {
+  .panel-details[open] .summary-arrow {
     transform: rotate(180deg);
     color: var(--gold);
   }
-  .fecha-details-content {
+  .panel-details-content {
     background: var(--surface);
     border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 16px 16px;
-    padding: 6px 0;
+    padding: 16px;
     animation: detailsFade 0.25s ease;
   }
   @keyframes detailsFade {
@@ -253,231 +574,60 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── LISTADO DE CONTACTOS ───────────────────────────────────────────────── */
-  .contacto-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 18px;
-    border-bottom: 1px solid var(--border);
+  /* Dentro del details-content, las tablas/cards no necesitan su propio borde duplicado */
+  .panel-details-content .tabla-wrap,
+  .panel-details-content .chart-card {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
   }
-  .contacto-item:last-child { border-bottom: none; }
-  .contacto-item.con-seguimiento {
-    background: rgba(62,207,142,0.06);
-    border-left: 3px solid rgba(62,207,142,0.35);
-    padding-left: 15px;
+  .panel-details-content .charts-grid {
+    gap: 16px;
   }
-  .contacto-info {
-    flex: 1;
-    min-width: 0;
-  }
-  .contacto-nombre {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .contacto-hora {
-    font-size: 10.5px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
-  .contacto-decision {
-    flex-shrink: 0;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 4px 10px;
-    border-radius: 99px;
-    white-space: nowrap;
-  }
-  .decision-fe          { background: rgba(201,162,39,0.14);  color: var(--gold2); }
-  .decision-reconciliacion { background: rgba(62,207,142,0.14); color: var(--green); }
-  .decision-ninguna     { background: rgba(122,127,142,0.14); color: var(--muted); }
-  .decision-otro        { background: rgba(224,92,122,0.14);  color: var(--rose);  }
 
-  /* ── BOTÓN LUPA ─────────────────────────────────────────────────────────── */
-  .btn-lupa {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.09);
-    color: var(--muted);
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* ── LINK MAPA (nuevo) ────────────────────────────────────────────────────── */
+  .panel-link {
+    text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-  }
-  .btn-lupa:hover {
-    background: rgba(201,162,39,0.14);
-    color: var(--gold2);
-    border-color: rgba(201,162,39,0.25);
-  }
-
-  /* ── LOADING / EMPTY ────────────────────────────────────────────────────── */
-  .loading { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
-  .loading i { font-size: 32px; display: block; margin-bottom: 12px; animation: spinLoad 1s linear infinite; }
-  @keyframes spinLoad { to { transform: rotate(360deg); } }
-  .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
-
-  /* ── MODAL DETALLE TROQUEL ──────────────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s;
-  }
-  .modal-overlay.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-  .modal-sheet {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 24px 24px 0 0;
-    width: 100%;
-    max-width: 540px;
-    max-height: 85vh;
-    overflow-y: auto;
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
-    padding-bottom: 32px;
-  }
-  .modal-overlay.open .modal-sheet {
-    transform: translateY(0);
-  }
-
-  /* Cabecera del modal */
-  .modal-head {
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 20px 14px;
+    border-radius: 16px;
+    padding: 16px 18px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    z-index: 2;
-  }
-  .modal-avatar {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    background: rgba(201,162,39,0.12);
-    border: 1.5px solid rgba(201,162,39,0.25);
-    color: var(--gold2);
-    font-size: 17px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .modal-head-info { flex: 1; min-width: 0; }
-  .modal-head-nombre {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--text);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .modal-head-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .modal-close {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: var(--muted);
-    font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.15s, color 0.15s;
-  }
-  .modal-close:hover { background: rgba(224,92,122,0.15); color: var(--rose); }
-
-  /* Cuerpo del modal */
-  .modal-body { padding: 12px 20px 0; }
-
-  .detalle-section {
-    margin-bottom: 16px;
-  }
-  .detalle-section-title {
-    font-size: 9px;
+    justify-content: space-between;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 8px;
-    padding-left: 2px;
+    color: var(--text);
+    transition: background 0.15s, border-color 0.15s;
   }
-  .detalle-row {
+  .panel-link:hover {
+    background: var(--surface2);
+    border-color: rgba(201,162,39,0.2);
+  }
+  .panel-link-left {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
   }
-  .detalle-row:last-child { border-bottom: none; }
-  .detalle-label {
-    font-size: 11px;
-    color: var(--muted);
-    min-width: 100px;
-    flex-shrink: 0;
-    padding-top: 1px;
-  }
-  .detalle-value {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    flex: 1;
-    word-break: break-word;
-  }
-  .detalle-badge {
+  .badge-nuevo {
     display: inline-block;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #1a1406;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
     border-radius: 99px;
+    animation: pulseNuevo 2s ease-in-out infinite;
   }
-  .badge-si  { background: rgba(62,207,142,0.15); color: var(--green); }
-  .badge-no  { background: rgba(122,127,142,0.12); color: var(--muted); }
+  @keyframes pulseNuevo {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201,162,39,0.45); }
+    50%      { box-shadow: 0 0 0 5px rgba(201,162,39,0); }
+  }
 
-  /* Spinner dentro del modal */
-  .modal-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-    gap: 12px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-  .spinner {
-    width: 28px; height: 28px;
-    border: 3px solid rgba(255,255,255,0.08);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spinLoad 0.8s linear infinite;
-  }
 </style>
 </head>
 <body>
@@ -489,11 +639,11 @@
       <img class="logo-img" src="source/jer.png" alt="Jesús es Rey">
     </div>
     <div>
-      <h1 class="panel-title">Panel pastores</h1>
-      <p class="panel-sub">Jesús es Rey</p>
+      <h1 class="panel-title">Panel general</h1>
+      <p class="panel-sub">Jesús es Rey · Resumen de actividad</p>
     </div>
   </div>
-  <button class="refresh-btn" onclick="regresar()" title="Regresar">
+  <button class="refresh-btn" onclick="regresar()" title="Regrear">
     <i class="ti ti-arrow-left"></i>
   </button>
 </div>
@@ -507,330 +657,514 @@
 
   <div id="contenido" style="display:none; flex-direction:column; gap:16px;">
 
-    <!-- RESUMEN GENERAL -->
+    <!-- GENERAL (siempre visible, sin details) -->
     <div>
       <p class="section-title">Resumen general</p>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon gold"><i class="ti ti-file-plus"></i></div>
-          <div class="stat-value" id="total-registros">-</div>
-          <div class="stat-label">Registros totales</div>
+          <div class="stat-icon gold"><i class="ti ti-users"></i></div>
+          <div class="stat-value" id="total-usuarios">-</div>
+          <div class="stat-label">Usuarios registrados</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon blue"><i class="ti ti-activity"></i></div>
-          <div class="stat-value" id="total-seguimientos">-</div>
-          <div class="stat-label">Troqueles con seguimiento</div>
+          <div class="stat-icon blue"><i class="ti ti-file-plus"></i></div>
+          <div class="stat-value" id="total-troqueles">-</div>
+          <div class="stat-label">Troqueles totales</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="ti ti-chart-line"></i></div>
+          <div class="stat-value" id="total-actividades">-</div>
+          <div class="stat-label">Actividades realizadas</div>
         </div>
       </div>
     </div>
 
-    <!-- LISTADO POR FECHA -->
-    <div>
-      <p class="section-title">Registros agrupados por día</p>
-      <div id="fechas-container" style="display:flex; flex-direction:column; gap:10px;"></div>
-    </div>
+    <!-- MAPA (nuevo) -->
+    <a href="mapa.html" class="panel-link">
+      <span class="panel-link-left">
+        <i class="ti ti-map-2"></i>
+        Mapa
+        <span class="badge-nuevo">Nuevo</span>
+      </span>
+      <i class="ti ti-chevron-right"></i>
+    </a>
 
-  </div><!-- /contenido -->
+    <!-- RESUMEN POR USUARIO -->
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>👤 Resumen por usuario</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="tabla-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th class="col-num">Troqueles</th>
+                <th class="col-num">Actividades</th>
+                <th class="col-lupa"></th>
+              </tr>
+            </thead>
+            <tbody id="user-list">
+              <tr><td colspan="4"><div class="empty">Sin datos</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <!-- RANKINGS -->
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>🏆 Rankings</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="charts-grid">
+          <div class="chart-card">
+            <p class="chart-title">🏆 Top 5 · Troqueles cargados</p>
+            <canvas id="chart-troqueles"></canvas>
+          </div>
+          <div class="chart-card">
+            <p class="chart-title">⚡ Top 5 · Actividades realizadas</p>
+            <canvas id="chart-actividades"></canvas>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- MOTIVOS DE ORACIÓN -->
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>🙏 Motivos de oración</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">🙏 Ranking de motivos</p>
+          <div id="oraciones-list"></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- DECISIONES -->
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>✝️ Decisiones</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">✝️ Decisiones de fe y reconciliación</p>
+          <div id="decisiones-list"></div>
+        </div>
+      </div>
+    </details>
+
+    <!-- DISTRIBUCIÓN POR TIPO -->
+    <details class="panel-details">
+      <summary class="panel-summary">
+        <span>👥 Distribución por tipo</span>
+        <i class="ti ti-chevron-down summary-arrow"></i>
+      </summary>
+      <div class="panel-details-content">
+        <div class="chart-card">
+          <p class="chart-title">👥 Adultos / Jóvenes / Adolescentes / Niños</p>
+          <div id="edades-list"></div>
+        </div>
+      </div>
+    </details>
+
+</div><!-- /contenido -->
 
 </div><!-- /panel-body -->
 
-
-<!-- ── MODAL DETALLE TROQUEL ────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="modal-detalle" onclick="handleModalOverlay(event)">
-  <div class="modal-sheet">
-
-    <div class="modal-head">
-      <div class="modal-avatar" id="md-avatar">--</div>
-      <div class="modal-head-info">
-        <p class="modal-head-nombre" id="md-nombre">Cargando...</p>
-        <p class="modal-head-sub" id="md-localidad">—</p>
+<!-- ── MODAL ACTIVIDADES ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close-btn"><i class="ti ti-x"></i></button>
+    <div class="modal-tag" id="modal-tag">Actividad</div>
+    <div class="modal-name" id="modal-nombre"></div>
+    <div class="modal-row"><strong>Contacto:</strong> <span id="modal-contacto"></span></div>
+    <div class="modal-row"><strong>Medio:</strong> <span id="modal-medio"></span></div>
+    <div class="modal-row"><strong>Fecha:</strong> <span id="modal-fecha"></span></div>
+    <div class="modal-obs" id="modal-obs"></div>
+    <!-- Navegación: solo visible si hay más de 1 actividad -->
+    <div class="modal-nav" id="modal-nav" style="display:none;">
+      <button class="modal-nav-btn" id="modal-prev" onclick="navActividad(-1)">
+        <i class="ti ti-chevron-left"></i>
+      </button>
+      <div class="modal-nav-counter">
+        <span id="modal-idx-actual">1</span> / <span id="modal-idx-total">1</span>
       </div>
-      <button class="modal-close" onclick="cerrarModal()">✕</button>
+      <button class="modal-nav-btn" id="modal-next" onclick="navActividad(1)">
+        <i class="ti ti-chevron-right"></i>
+      </button>
     </div>
-
-    <div class="modal-body" id="md-body">
-      <div class="modal-loading">
-        <div class="spinner"></div>
-        Cargando datos...
-      </div>
-    </div>
-
   </div>
 </div>
 
-
 <script>
-const BASE_URL = "https://www.cronomet.com.ar/jer/php";
+// ── VERIFICACIÓN DE ACCESO ──────────────────────────────────────────────────
+/*const userStr = localStorage.getItem("user");
 
-const DIAS_SEMANA = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-const MESES       = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+if (!userStr) {
+  document.querySelector(".panel-body").innerHTML = `
+    <div class="bloqueado">
+      <i class="ti ti-lock"></i>
+      <h2>NO HABILITADO PARA ESTA OPCIÓN</h2>
+      <p>No hay sesión iniciada.</p>
+    </div>`;
+} else {
+  // const us = JSON.parse(userStr);
+  // if (us.rol === "Pastor" || us.rol === "Ay.Pastor" || us.rol === "Lider") {
+  */cargarPanel();
+  // }
+//}
 
-function esc(str) {
-  return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function regresar() {
+  window.location.href = "index.html";
 }
 
-function splitFechaHora(registroStr) {
-  if (!registroStr) return { fecha: null, hora: null };
-  const [fecha, hora] = registroStr.split(" ");
-  return { fecha, hora: hora ? hora.substring(0, 5) : null };
+// ── MODAL ───────────────────────────────────────────────────────────────────
+const modalOverlay = document.getElementById("modal-overlay");
+
+document.getElementById("modal-close-btn").addEventListener("click", cerrarModal);
+modalOverlay.addEventListener("click", function(e) {
+  if (e.target === modalOverlay) cerrarModal();
+});
+
+// Estado de navegación
+let _actividadesModal = [];
+let _actividadIdx     = 0;
+let _nombreModal      = "";
+
+function abrirModal(u) {
+  _nombreModal = u.nombre + " " + u.apellido;
+
+  // Construir array de actividades: si viene "actividades_detalle" usarlo,
+  // si no, armar uno con los campos de última actividad
+  if (u.actividades_detalle && u.actividades_detalle.length > 0) {
+    _actividadesModal = u.actividades_detalle;
+  } else {
+    _actividadesModal = [{
+      contacto_nombre:   u.contacto_nombre   || "",
+      contacto_apellido: u.contacto_apellido || "",
+      medio:             u.ultima_medio      || "-",
+      fecha:             u.ultima_actividad_fecha || null,
+      obs:               u.ultima_obs        || ""
+    }];
+  }
+
+  _actividadIdx = 0;
+  renderModalActividad();
+  modalOverlay.classList.add("open");
 }
 
-function formatFechaLarga(fechaStr) {
-  const [y, m, d] = fechaStr.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  return DIAS_SEMANA[dt.getDay()] + " " + d + " de " + MESES[m - 1] + " de " + y;
+function renderModalActividad() {
+  const act   = _actividadesModal[_actividadIdx];
+  const total = _actividadesModal.length;
+
+  document.getElementById("modal-nombre").textContent = _nombreModal;
+  document.getElementById("modal-tag").textContent    = total > 1
+    ? "Actividades registradas"
+    : "Última actividad";
+
+  document.getElementById("modal-contacto").textContent =
+    ((act.contacto_nombre || "") + " " + (act.contacto_apellido || "")).trim() || "-";
+  document.getElementById("modal-medio").textContent =
+    act.medio || act.ultima_medio || "-";
+  document.getElementById("modal-fecha").textContent =
+    formatFecha(act.fecha || act.ultima_actividad_fecha) || "-";
+
+  const obs = document.getElementById("modal-obs");
+  const obsTexto = act.obs || act.ultima_obs || "";
+  if (obsTexto) {
+    obs.textContent   = obsTexto;
+    obs.style.display = "block";
+  } else {
+    obs.style.display = "none";
+  }
+
+  // Navegación: solo mostrar si hay más de 1
+  const nav = document.getElementById("modal-nav");
+  if (total > 1) {
+    nav.style.display = "flex";
+    document.getElementById("modal-idx-actual").textContent = _actividadIdx + 1;
+    document.getElementById("modal-idx-total").textContent  = total;
+    document.getElementById("modal-prev").disabled = _actividadIdx === 0;
+    document.getElementById("modal-next").disabled = _actividadIdx === total - 1;
+  } else {
+    nav.style.display = "none";
+  }
 }
 
-function claseDecision(decision) {
-  if (!decision) return "decision-ninguna";
-  const d = decision.toLowerCase();
-  if (d.includes("fe"))            return "decision-fe";
-  if (d.includes("reconcil"))      return "decision-reconciliacion";
-  if (d.includes("ninguna"))       return "decision-ninguna";
-  return "decision-otro";
-}
-
-function regresar() { window.location.href = "index.html"; }
-
-/* ── MODAL ──────────────────────────────────────────────────────────────────── */
-
-function abrirDetalle(id, nombre, apellido) {
-  var fullname = (apellido + " " + nombre).trim();
-  var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase();
-
-  document.getElementById("md-avatar").textContent    = initials || "?";
-  document.getElementById("md-nombre").textContent    = fullname || "Sin nombre";
-  document.getElementById("md-localidad").textContent = "Cargando...";
-  document.getElementById("md-body").innerHTML =
-    '<div class="modal-loading"><div class="spinner"></div>Cargando datos...</div>';
-
-  document.getElementById("modal-detalle").classList.add("open");
-
-  fetch(BASE_URL + "/detallecontacto.php?id=" + encodeURIComponent(id))
-    .then(function(r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    })
-    .then(function(resp) {
-      if (!resp.success) throw new Error(resp.message || "Sin datos");
-
-      var c = resp.data;
-      var loc = [c.localidad, c.provincia].filter(Boolean).join(", ");
-      document.getElementById("md-localidad").textContent = loc || "—";
-
-      function badge(val) {
-        var ok = (val === "Sí" || val === "Si" || val === "sí" || val === "si");
-        return ok
-          ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-          : '<span class="detalle-badge badge-no">No</span>';
-      }
-
-      function fila(label, value) {
-        return '<div class="detalle-row">' +
-          '<span class="detalle-label">' + label + '</span>' +
-          '<span class="detalle-value">' + esc(value || "—") + '</span>' +
-          '</div>';
-      }
-
-      function filaBadge(label, badgeHtml) {
-        return '<div class="detalle-row">' +
-          '<span class="detalle-label">' + label + '</span>' +
-          '<span class="detalle-value">' + badgeHtml + '</span>' +
-          '</div>';
-      }
-
-      var decisionTxt = c.decision && c.decision.trim() !== "" ? c.decision : "Ninguna";
-
-      document.getElementById("md-body").innerHTML =
-
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Datos personales</p>' +
-          fila("Nombre",    (c.nombre  || "") + " " + (c.apellido || "")) +
-          fila("Celular",   c.celular) +
-          fila("Vía",       c.contacto) +
-          fila("Edad/Tipo", c.edad) +
-        '</div>' +
-
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Ubicación</p>' +
-          fila("Dirección", c.direccion) +
-          fila("Barrio",    c.barrio) +
-          fila("Localidad", c.localidad) +
-          fila("Provincia", c.provincia) +
-          filaBadge("¿Quiere visita?", badge(c.quierevisita)) +
-          filaBadge("¿Casa de paz?",   badge(c.casadepaz)) +
-        '</div>' +
-
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Decisión y seguimiento</p>' +
-          '<div class="detalle-row">' +
-            '<span class="detalle-label">Decisión</span>' +
-            '<span class="detalle-value">' +
-              '<span class="detalle-badge ' + claseDecision(c.decision) + '">' + esc(decisionTxt) + '</span>' +
-            '</span>' +
-          '</div>' +
-          filaBadge("Oración", badge(c.oracion === "si" ? "si" : "no")) +
-          fila("Observaciones", c.observaciones) +
-        '</div>';
-    })
-    .catch(function(err) {
-      document.getElementById("md-localidad").textContent = "Error";
-      document.getElementById("md-body").innerHTML =
-        '<div class="modal-loading" style="color:var(--rose)">Error al cargar: ' + esc(err.message) + '</div>';
-    });
+function navActividad(dir) {
+  const nuevo = _actividadIdx + dir;
+  if (nuevo < 0 || nuevo >= _actividadesModal.length) return;
+  _actividadIdx = nuevo;
+  renderModalActividad();
 }
 
 function cerrarModal() {
-  document.getElementById("modal-detalle").classList.remove("open");
+  modalOverlay.classList.remove("open");
 }
 
-function handleModalOverlay(e) {
-  if (e.target === document.getElementById("modal-detalle")) cerrarModal();
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function formatFecha(fechaStr) {
+  if (!fechaStr) return null;
+  const d = new Date(fechaStr);
+  return d.toLocaleDateString("es-AR") + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 }
 
-/* ── FETCH PANEL ─────────────────────────────────────────────────────────────── */
-
+// ── FETCH ─────────────────────────────────────────────────────────────────────
 function cargarPanel() {
   document.getElementById("loading").style.display   = "block";
   document.getElementById("contenido").style.display = "none";
 
-  Promise.all([
-    fetch(BASE_URL + "/info.php").then(r => r.json()),
-    fetch(BASE_URL + "/getseguimientos.php").then(r => r.json()),
-    fetch(BASE_URL + "/getusuarios.php").then(r => r.json())
-  ])
-  .then(function(results) {
-    var dataInfo  = results[0];
-    var dataSeg   = results[1];
-    var dataUsers = results[2];
-
-    dataInfo.seguimientos       = dataSeg.seguimientos       || [];
-    dataInfo.total_seguimientos = dataSeg.total_seguimientos || 0;
-    dataInfo.usuarios           = dataUsers.data || [];
-
-    renderPanel(dataInfo);
-  })
-  .catch(function(err) {
-    document.getElementById("loading").innerHTML =
-      '<i class="ti ti-alert-circle"></i> Error al cargar los datos.';
-    console.error(err);
-  });
+  fetch("https://www.cronomet.com.ar/jer/php/panel.php")
+    .then(r => r.json())
+    .then(data => renderPanel(data))
+    .catch(err => {
+      document.getElementById("loading").innerHTML = '<i class="ti ti-alert-circle"></i> Error al cargar los datos.';
+      console.error(err);
+    });
 }
 
-/* ── RENDER ──────────────────────────────────────────────────────────────────── */
-
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderPanel(data) {
-  var registros    = Array.isArray(data) ? data : (data.registros    || []);
-  var seguimientos = data.seguimientos || [];
-  var usuarios     = data.usuarios     || [];
 
-  // Mapa dni → nombre completo del consolidador
-  var mapaUsuarios = {};
-  usuarios.forEach(function(u) {
-    mapaUsuarios[String(u.dni)] = (u.nombre + " " + u.apellido).trim();
-  });
+  // TOTALES
+  document.getElementById("total-usuarios").textContent    = data.totales.usuarios;
+  document.getElementById("total-troqueles").textContent   = data.totales.troqueles;
+  document.getElementById("total-actividades").textContent = data.totales.actividades;
 
-  // Set de ids con seguimiento
-  var idsConSeguimiento = new Set(seguimientos.map(function(s) { return String(s.id_contacto); }));
 
-  // Agrupar por fecha
-  var grupos = {};
-  registros.forEach(function(r) {
-    var parts = splitFechaHora(r.registro);
-    if (!parts.fecha) return;
-    if (!grupos[parts.fecha]) grupos[parts.fecha] = [];
-    grupos[parts.fecha].push({
-      id:        r.id,
-      nombre:    r.nombre    || "",
-      apellido:  r.apellido  || "",
-      hora:      parts.hora,
-      decision:  r.decision,
-      dataentry: r.dataentry
+  // Forzar resize de los charts cuando se abre su <details>
+  document.querySelectorAll(".panel-details").forEach(function(det) {
+    det.addEventListener("toggle", function() {
+      if (det.open) {
+        window.dispatchEvent(new Event("resize"));
+      }
     });
   });
 
-  var fechasOrdenadas = Object.keys(grupos).sort(function(a, b) { return b.localeCompare(a); });
+  // ── TABLA DE USUARIOS ────────────────────────────────────────────────────
+  const lista        = document.getElementById("user-list");
+  const isMobile     = () => window.innerWidth <= 500;
+  const usuariosData = data.usuarios;
 
-  document.getElementById("total-registros").textContent    = registros.length;
-  document.getElementById("total-seguimientos").textContent = data.total_seguimientos || seguimientos.length;
+  function buildTabla() {
+    if (!usuariosData || usuariosData.length === 0) {
+      lista.innerHTML = '<tr><td colspan="4"><div class="empty">Sin usuarios registrados</div></td></tr>';
+      return;
+    }
 
-  var cont = document.getElementById("fechas-container");
+    const mobile = isMobile();
 
-  if (fechasOrdenadas.length === 0) {
-    cont.innerHTML = '<div class="empty">Sin registros</div>';
-  } else {
-    cont.innerHTML = "";
+    lista.innerHTML = usuariosData.map((u, idx) => {
+      const tieneActividad = u.actividades > 0 && u.ultima_actividad_fecha;
 
-    fechasOrdenadas.forEach(function(fecha, idx) {
-      var items = grupos[fecha].sort(function(a, b) {
-        return (a.hora || "").localeCompare(b.hora || "");
+      const lupaCell = tieneActividad
+        ? `<td class="col-lupa">
+             <button class="lupa-btn" data-idx="${idx}" title="Ver última actividad">
+               <i class="ti ti-zoom-in"></i>
+             </button>
+           </td>`
+        : `<td class="col-lupa"></td>`;
+
+      if (mobile) {
+        // En mobile: usuario arriba, nums+lupa abajo en dos columnas via grid
+        return `
+          <tr>
+            <td style="grid-column:1; grid-row:1; padding:0 0 10px 0;">
+              <div class="user-name">${u.nombre} ${u.apellido}</div>
+              <div class="user-rol">${u.rol}</div>
+            </td>
+            <td class="col-lupa" style="grid-column:2; grid-row:1/3; padding:0; text-align:right; align-self:center;">
+              ${tieneActividad
+                ? `<button class="lupa-btn" data-idx="${idx}" title="Ver última actividad"><i class="ti ti-zoom-in"></i></button>`
+                : ``}
+            </td>
+            <td style="grid-column:1; grid-row:2; padding:0; display:flex; gap:20px; align-items:center;">
+              <div>
+                <span class="stat-num">${u.troqueles}</span>
+                <span class="stat-num-label">Troqueles</span>
+              </div>
+              <div>
+                <span class="stat-num">${u.actividades}</span>
+                <span class="stat-num-label">Actividades</span>
+              </div>
+            </td>
+          </tr>`;
+      } else {
+        // Desktop: tabla normal
+        return `
+          <tr>
+            <td>
+              <div class="user-name">${u.nombre} ${u.apellido}</div>
+              <div class="user-rol">${u.rol}</div>
+            </td>
+            <td class="col-num">
+              <span class="stat-num">${u.troqueles}</span>
+            </td>
+            <td class="col-num">
+              <span class="stat-num">${u.actividades}</span>
+            </td>
+            ${lupaCell}
+          </tr>`;
+      }
+    }).join("");
+
+    // Clicks en botones lupa
+    lista.querySelectorAll(".lupa-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        abrirModal(usuariosData[parseInt(this.dataset.idx)]);
       });
-
-      var conActividad = items.filter(function(u) { return idsConSeguimiento.has(String(u.id)); }).length;
-      var sinActividad = items.length - conActividad;
-
-      // ── Armar HTML de items ───────────────────────────────────────────────
-      var listaHtml = items.map(function(u) {
-        var decisionTxt        = u.decision && u.decision.trim() !== "" ? u.decision : "Ninguna";
-        var tieneSeg           = idsConSeguimiento.has(String(u.id));
-        var nombreConsolidador = u.dataentry ? (mapaUsuarios[String(u.dataentry)] || "") : "";
-
-        return (
-          '<div class="contacto-item' + (tieneSeg ? " con-seguimiento" : "") + '">' +
-            '<div class="contacto-info">' +
-              '<div class="contacto-nombre">' + esc(u.apellido) + ' ' + esc(u.nombre) + '</div>' +
-              '<div class="contacto-hora">' +
-                (nombreConsolidador ? '<b>Cons.:</b> ' + esc(nombreConsolidador) : '') +
-                (tieneSeg ? ' <span style="color:var(--green);font-size:10px;font-weight:700;margin-left:6px;">✔ Con seguimiento</span>' : '') +
-              '</div>' +
-            '</div>' +
-            '<div class="contacto-decision ' + claseDecision(u.decision) + '">' + esc(decisionTxt) + '</div>' +
-            '<button class="btn-lupa" ' +
-              'onclick="abrirDetalle(' + esc(u.id) + ',\'' + esc(u.nombre) + '\',\'' + esc(u.apellido) + '\')" ' +
-              'title="Ver detalle">' +
-              '<i class="ti ti-zoom-in"></i>' +
-            '</button>' +
-          '</div>'
-        );
-      }).join("");
-
-      // ── Armar el <details> ────────────────────────────────────────────────
-      var details = document.createElement("details");
-      details.className = "fecha-details";
-      if (idx === 0) details.setAttribute("open", "");
-
-      details.innerHTML =
-        '<summary class="fecha-summary">' +
-          '<div class="fecha-summary-left">' +
-            '<div class="fecha-icon"><i class="ti ti-calendar-event"></i></div>' +
-            '<div class="fecha-info">' +
-              '<div class="fecha-label">' + formatFechaLarga(fecha) + '</div>' +
-              '<div class="fecha-sub">' +
-                'Registros: <strong style="color:var(--text)">' + items.length + '</strong>' +
-                '&nbsp;·&nbsp;' +
-                'Con seg: <strong style="color:var(--green)">' + conActividad + '</strong>' +
-                '&nbsp;·&nbsp;' +
-                'Sin seg: <strong style="color:var(--rose)">' + sinActividad + '</strong>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="fecha-summary-right">' +
-            '<span class="fecha-badge">' + items.length + '</span>' +
-            '<i class="ti ti-chevron-down summary-arrow"></i>' +
-          '</div>' +
-        '</summary>' +
-        '<div class="fecha-details-content">' + listaHtml + '</div>';
-
-      cont.appendChild(details);
     });
   }
 
+  buildTabla();
+
+  // Redibujar si cambia el tamaño de ventana (orientación, resize)
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildTabla, 150);
+  });
+
+  // ── GRÁFICO TROQUELES ────────────────────────────────────────────────────
+  const ctxT = document.getElementById("chart-troqueles").getContext("2d");
+  new Chart(ctxT, {
+    type: "bar",
+    data: {
+      labels: data.rankTroqueles.map(u => u.nombre + " " + u.apellido.charAt(0) + "."),
+      datasets: [{
+        data: data.rankTroqueles.map(u => u.total),
+        backgroundColor: ["rgba(201,162,39,0.7)","rgba(201,162,39,0.55)","rgba(201,162,39,0.4)","rgba(201,162,39,0.3)","rgba(201,162,39,0.2)"],
+        borderColor: "rgba(201,162,39,0.8)",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7a7f8e", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+        y: { ticks: { color: "#f1ede4", font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // ── GRÁFICO ACTIVIDADES ──────────────────────────────────────────────────
+  const ctxA = document.getElementById("chart-actividades").getContext("2d");
+  new Chart(ctxA, {
+    type: "bar",
+    data: {
+      labels: data.rankActividades.map(u => u.nombre + " " + u.apellido.charAt(0) + "."),
+      datasets: [{
+        data: data.rankActividades.map(u => u.total),
+        backgroundColor: ["rgba(62,207,142,0.7)","rgba(62,207,142,0.55)","rgba(62,207,142,0.4)","rgba(62,207,142,0.3)","rgba(62,207,142,0.2)"],
+        borderColor: "rgba(62,207,142,0.8)",
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#7a7f8e", font: { size: 11 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+        y: { ticks: { color: "#f1ede4", font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // ── MOTIVOS DE ORACIÓN ───────────────────────────────────────────────────
+  const oracionesList = document.getElementById("oraciones-list");
+  if (!data.rankOraciones || data.rankOraciones.length === 0) {
+    oracionesList.innerHTML = '<div class="empty">Sin datos de oración</div>';
+  } else {
+    const maxOracion = parseInt(data.rankOraciones[0].total);
+    oracionesList.innerHTML = data.rankOraciones.map((o, i) => {
+      const pct   = Math.round((parseInt(o.total) / maxOracion) * 100);
+      const isTop = i < 3;
+      return `
+        <div class="oracion-item">
+          <div class="oracion-rank ${isTop ? "top" : ""}">${i + 1}</div>
+          <div class="oracion-bar-wrap">
+            <div class="oracion-motivo">${o.motivo}</div>
+            <div class="oracion-bar-bg"><div class="oracion-bar-fill" style="width:${pct}%"></div></div>
+          </div>
+          <div class="oracion-count">${o.total}</div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── EDADES ───────────────────────────────────────────────────────────────
+  const edadesList = document.getElementById("edades-list");
+  if (!data.rankEdades || data.rankEdades.length === 0) {
+    edadesList.innerHTML = '<div class="empty">Sin datos</div>';
+  } else {
+    const maxEdad     = parseInt(data.rankEdades[0].total);
+    const totalEdades = data.rankEdades.reduce((acc, e) => acc + parseInt(e.total), 0);
+    const configEdad  = {
+      "Adulto":      { color: "rgba(74,130,228,0.8)",  bg: "rgba(74,130,228,0.15)",  icon: "ti-user" },
+      "Joven":       { color: "rgba(62,207,142,0.8)",  bg: "rgba(62,207,142,0.15)",  icon: "ti-friends" },
+      "Adolescente": { color: "rgba(201,162,39,0.8)",  bg: "rgba(201,162,39,0.15)",  icon: "ti-user-exclamation" },
+      "Niño":        { color: "rgba(224,92,122,0.8)",  bg: "rgba(224,92,122,0.15)",  icon: "ti-mood-smile" }
+    };
+    edadesList.innerHTML = data.rankEdades.map(e => {
+      const pct      = Math.round((parseInt(e.total) / maxEdad) * 100);
+      const pctTotal = Math.round((parseInt(e.total) / totalEdades) * 100);
+      const cfg      = configEdad[e.edad] || { color: "rgba(255,255,255,0.5)", bg: "rgba(255,255,255,0.08)", icon: "ti-users" };
+      return `
+        <div class="edad-item">
+          <div class="edad-icon" style="background:${cfg.bg}; color:${cfg.color}"><i class="ti ${cfg.icon}"></i></div>
+          <div class="edad-bar-wrap">
+            <div class="edad-label">${e.edad} <span style="font-size:10px;color:var(--muted);font-weight:400">${pctTotal}%</span></div>
+            <div class="edad-bar-bg"><div class="edad-bar-fill" style="width:${pct}%; background:${cfg.color}"></div></div>
+          </div>
+          <div class="edad-count" style="color:${cfg.color}">${e.total}</div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── DECISIONES ───────────────────────────────────────────────────────────
+  const decisionesList  = document.getElementById("decisiones-list");
+  if (!data.rankDecisiones || data.rankDecisiones.length === 0) {
+    decisionesList.innerHTML = '<div class="empty">Sin decisiones registradas</div>';
+  } else {
+    const totalDecisiones = data.rankDecisiones.reduce((acc, d) => acc + parseInt(d.total), 0);
+    const maxDec          = parseInt(data.rankDecisiones[0].total);
+    const configDec       = {
+      "Decisión de fe": { color: "rgba(201,162,39,0.9)",  bg: "rgba(201,162,39,0.15)",  icon: "✝️" },
+      "Reconciliación": { color: "rgba(62,207,142,0.9)",  bg: "rgba(62,207,142,0.15)",  icon: "🤝" },
+      "Ninguna":        { color: "rgba(122,127,142,0.8)", bg: "rgba(122,127,142,0.12)", icon: "➖" }
+    };
+    decisionesList.innerHTML = data.rankDecisiones.map(d => {
+      const pct      = Math.round((parseInt(d.total) / maxDec) * 100);
+      const pctTotal = Math.round((parseInt(d.total) / totalDecisiones) * 100);
+      const cfg      = configDec[d.decision] || { color: "rgba(255,255,255,0.5)", bg: "rgba(255,255,255,0.08)", icon: "⚡" };
+      return `
+        <div class="decision-item">
+          <div class="decision-icon" style="background:${cfg.bg}">${cfg.icon}</div>
+          <div class="decision-bar-wrap">
+            <div class="decision-label">${d.decision} <span class="decision-pct">${pctTotal}% del total</span></div>
+            <div class="decision-bar-bg"><div class="decision-bar-fill" style="width:${pct}%; background:${cfg.color}"></div></div>
+          </div>
+          <div class="decision-count" style="color:${cfg.color}">${d.total}</div>
+        </div>`;
+    }).join("");
+  }
+
+  // MOSTRAR
   document.getElementById("loading").style.display   = "none";
   document.getElementById("contenido").style.display = "flex";
 }
-
-/* ── INICIO ──────────────────────────────────────────────────────────────────── */
-cargarPanel();
 </script>
 
 </body>

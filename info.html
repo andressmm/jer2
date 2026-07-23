@@ -163,9 +163,7 @@
   }
 
   /* ── DETAILS / SUMMARY POR FECHA ───────────────────────────────────────── */
-  .fecha-details {
-    background: transparent;
-  }
+  .fecha-details { background: transparent; }
   .fecha-summary {
     list-style: none;
     cursor: pointer;
@@ -200,9 +198,7 @@
     font-size: 17px;
     flex-shrink: 0;
   }
-  .fecha-info {
-    min-width: 0;
-  }
+  .fecha-info { min-width: 0; }
   .fecha-label {
     font-size: 14px;
     font-weight: 700;
@@ -261,12 +257,16 @@
   .contacto-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     padding: 11px 18px;
     border-bottom: 1px solid var(--border);
   }
   .contacto-item:last-child { border-bottom: none; }
-  .contacto-item.con-seguimiento { background: rgba(62,207,142,0.06); border-left: 3px solid rgba(62,207,142,0.35); padding-left: 15px; }
+  .contacto-item.con-seguimiento {
+    background: rgba(62,207,142,0.06);
+    border-left: 3px solid rgba(62,207,142,0.35);
+    padding-left: 15px;
+  }
   .contacto-info {
     flex: 1;
     min-width: 0;
@@ -293,21 +293,31 @@
     border-radius: 99px;
     white-space: nowrap;
   }
-  .decision-fe {
+  .decision-fe          { background: rgba(201,162,39,0.14);  color: var(--gold2); }
+  .decision-reconciliacion { background: rgba(62,207,142,0.14); color: var(--green); }
+  .decision-ninguna     { background: rgba(122,127,142,0.14); color: var(--muted); }
+  .decision-otro        { background: rgba(224,92,122,0.14);  color: var(--rose);  }
+
+  /* ── BOTÓN LUPA ─────────────────────────────────────────────────────────── */
+  .btn-lupa {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.09);
+    color: var(--muted);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-lupa:hover {
     background: rgba(201,162,39,0.14);
     color: var(--gold2);
-  }
-  .decision-reconciliacion {
-    background: rgba(62,207,142,0.14);
-    color: var(--green);
-  }
-  .decision-ninguna {
-    background: rgba(122,127,142,0.14);
-    color: var(--muted);
-  }
-  .decision-otro {
-    background: rgba(224,92,122,0.14);
-    color: var(--rose);
+    border-color: rgba(201,162,39,0.25);
   }
 
   /* ── LOADING / EMPTY ────────────────────────────────────────────────────── */
@@ -316,11 +326,158 @@
   @keyframes spinLoad { to { transform: rotate(360deg); } }
   .empty { text-align: center; padding: 30px; color: var(--muted); font-size: 13px; }
 
-  /* ── BLOQUEADO ──────────────────────────────────────────────────────────── */
-  .bloqueado { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 20px; }
-  .bloqueado i { font-size: 56px; color: var(--rose); margin-bottom: 20px; }
-  .bloqueado h2 { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
-  .bloqueado p { font-size: 13px; color: var(--muted); }
+  /* ── MODAL DETALLE TROQUEL ──────────────────────────────────────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .modal-sheet {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 540px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+    padding-bottom: 32px;
+  }
+  .modal-overlay.open .modal-sheet {
+    transform: translateY(0);
+  }
+
+  /* Cabecera del modal */
+  .modal-head {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 2;
+  }
+  .modal-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(201,162,39,0.12);
+    border: 1.5px solid rgba(201,162,39,0.25);
+    color: var(--gold2);
+    font-size: 17px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-head-info { flex: 1; min-width: 0; }
+  .modal-head-nombre {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .modal-head-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .modal-close {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted);
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .modal-close:hover { background: rgba(224,92,122,0.15); color: var(--rose); }
+
+  /* Cuerpo del modal */
+  .modal-body { padding: 12px 20px 0; }
+
+  .detalle-section {
+    margin-bottom: 16px;
+  }
+  .detalle-section-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+  .detalle-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .detalle-row:last-child { border-bottom: none; }
+  .detalle-label {
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 100px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .detalle-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    word-break: break-word;
+  }
+  .detalle-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+  .badge-si  { background: rgba(62,207,142,0.15); color: var(--green); }
+  .badge-no  { background: rgba(122,127,142,0.12); color: var(--muted); }
+
+  /* Spinner dentro del modal */
+  .modal-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    gap: 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 3px solid rgba(255,255,255,0.08);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spinLoad 0.8s linear infinite;
+  }
 </style>
 </head>
 <body>
@@ -377,10 +534,40 @@
 
 </div><!-- /panel-body -->
 
+
+<!-- ── MODAL DETALLE TROQUEL ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-detalle" onclick="handleModalOverlay(event)">
+  <div class="modal-sheet">
+
+    <div class="modal-head">
+      <div class="modal-avatar" id="md-avatar">--</div>
+      <div class="modal-head-info">
+        <p class="modal-head-nombre" id="md-nombre">Cargando...</p>
+        <p class="modal-head-sub" id="md-localidad">—</p>
+      </div>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body" id="md-body">
+      <div class="modal-loading">
+        <div class="spinner"></div>
+        Cargando datos...
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
 <script>
-// ── HELPERS ──────────────────────────────────────────────────────────────────
+const BASE_URL = "https://www.cronomet.com.ar/jer/php";
+
 const DIAS_SEMANA = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MESES       = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+function esc(str) {
+  return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
 
 function splitFechaHora(registroStr) {
   if (!registroStr) return { fecha: null, hora: null };
@@ -391,32 +578,126 @@ function splitFechaHora(registroStr) {
 function formatFechaLarga(fechaStr) {
   const [y, m, d] = fechaStr.split("-").map(Number);
   const dt = new Date(y, m - 1, d);
-  const diaSemana = DIAS_SEMANA[dt.getDay()];
-  return `${diaSemana} ${d} de ${MESES[m - 1]} de ${y}`;
+  return DIAS_SEMANA[dt.getDay()] + " " + d + " de " + MESES[m - 1] + " de " + y;
 }
 
 function claseDecision(decision) {
   if (!decision) return "decision-ninguna";
   const d = decision.toLowerCase();
-  if (d.includes("fe"))                      return "decision-fe";
-  if (d.includes("reconcil"))                return "decision-reconciliacion";
-  if (d.includes("ninguna") || d === "")     return "decision-ninguna";
+  if (d.includes("fe"))            return "decision-fe";
+  if (d.includes("reconcil"))      return "decision-reconciliacion";
+  if (d.includes("ninguna"))       return "decision-ninguna";
   return "decision-otro";
 }
 
-function regresar() {
-  window.location.href = "index.html";
+function regresar() { window.location.href = "index.html"; }
+
+/* ── MODAL ──────────────────────────────────────────────────────────────────── */
+
+function abrirDetalle(id, nombre, apellido) {
+  var fullname = (apellido + " " + nombre).trim();
+  var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase();
+
+  document.getElementById("md-avatar").textContent    = initials || "?";
+  document.getElementById("md-nombre").textContent    = fullname || "Sin nombre";
+  document.getElementById("md-localidad").textContent = "Cargando...";
+  document.getElementById("md-body").innerHTML =
+    '<div class="modal-loading"><div class="spinner"></div>Cargando datos...</div>';
+
+  document.getElementById("modal-detalle").classList.add("open");
+
+  fetch(BASE_URL + "/detallecontacto.php?id=" + encodeURIComponent(id))
+    .then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function(resp) {
+      if (!resp.success) throw new Error(resp.message || "Sin datos");
+
+      var c = resp.data;
+      var loc = [c.localidad, c.provincia].filter(Boolean).join(", ");
+      document.getElementById("md-localidad").textContent = loc || "—";
+
+      function badge(val) {
+        var ok = (val === "Sí" || val === "Si" || val === "sí" || val === "si");
+        return ok
+          ? '<span class="detalle-badge badge-si">✔ Sí</span>'
+          : '<span class="detalle-badge badge-no">No</span>';
+      }
+
+      function fila(label, value) {
+        return '<div class="detalle-row">' +
+          '<span class="detalle-label">' + label + '</span>' +
+          '<span class="detalle-value">' + esc(value || "—") + '</span>' +
+          '</div>';
+      }
+
+      function filaBadge(label, badgeHtml) {
+        return '<div class="detalle-row">' +
+          '<span class="detalle-label">' + label + '</span>' +
+          '<span class="detalle-value">' + badgeHtml + '</span>' +
+          '</div>';
+      }
+
+      var decisionTxt = c.decision && c.decision.trim() !== "" ? c.decision : "Ninguna";
+
+      document.getElementById("md-body").innerHTML =
+
+        '<div class="detalle-section">' +
+          '<p class="detalle-section-title">Datos personales</p>' +
+          fila("Nombre",    (c.nombre  || "") + " " + (c.apellido || "")) +
+          fila("Celular",   c.celular) +
+          fila("Vía",       c.contacto) +
+          fila("Edad/Tipo", c.edad) +
+        '</div>' +
+
+        '<div class="detalle-section">' +
+          '<p class="detalle-section-title">Ubicación</p>' +
+          fila("Dirección", c.direccion) +
+          fila("Barrio",    c.barrio) +
+          fila("Localidad", c.localidad) +
+          fila("Provincia", c.provincia) +
+          filaBadge("¿Quiere visita?", badge(c.quierevisita)) +
+          filaBadge("¿Casa de paz?",   badge(c.casadepaz)) +
+        '</div>' +
+
+        '<div class="detalle-section">' +
+          '<p class="detalle-section-title">Decisión y seguimiento</p>' +
+          '<div class="detalle-row">' +
+            '<span class="detalle-label">Decisión</span>' +
+            '<span class="detalle-value">' +
+              '<span class="detalle-badge ' + claseDecision(c.decision) + '">' + esc(decisionTxt) + '</span>' +
+            '</span>' +
+          '</div>' +
+          filaBadge("Oración", badge(c.oracion === "si" ? "si" : "no")) +
+          fila("Observaciones", c.observaciones) +
+        '</div>';
+    })
+    .catch(function(err) {
+      document.getElementById("md-localidad").textContent = "Error";
+      document.getElementById("md-body").innerHTML =
+        '<div class="modal-loading" style="color:var(--rose)">Error al cargar: ' + esc(err.message) + '</div>';
+    });
 }
 
-// ── FETCH ─────────────────────────────────────────────────────────────────────
+function cerrarModal() {
+  document.getElementById("modal-detalle").classList.remove("open");
+}
+
+function handleModalOverlay(e) {
+  if (e.target === document.getElementById("modal-detalle")) cerrarModal();
+}
+
+/* ── FETCH PANEL ─────────────────────────────────────────────────────────────── */
+
 function cargarPanel() {
   document.getElementById("loading").style.display   = "block";
   document.getElementById("contenido").style.display = "none";
 
   Promise.all([
-    fetch("https://www.cronomet.com.ar/jer/php/info.php").then(r => r.json()),
-    fetch("https://www.cronomet.com.ar/jer/php/getseguimientos.php").then(r => r.json()),
-    fetch("https://www.cronomet.com.ar/jer/php/getusuarios.php").then(r => r.json())
+    fetch(BASE_URL + "/info.php").then(r => r.json()),
+    fetch(BASE_URL + "/getseguimientos.php").then(r => r.json()),
+    fetch(BASE_URL + "/getusuarios.php").then(r => r.json())
   ])
   .then(function(results) {
     var dataInfo  = results[0];
@@ -425,7 +706,6 @@ function cargarPanel() {
 
     dataInfo.seguimientos       = dataSeg.seguimientos       || [];
     dataInfo.total_seguimientos = dataSeg.total_seguimientos || 0;
-    // getusuarios devuelve { success: true, data: [...] }
     dataInfo.usuarios           = dataUsers.data || [];
 
     renderPanel(dataInfo);
@@ -437,110 +717,119 @@ function cargarPanel() {
   });
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
+/* ── RENDER ──────────────────────────────────────────────────────────────────── */
+
 function renderPanel(data) {
-  const registros    = Array.isArray(data) ? data : (data.registros    || []);
-  const seguimientos = data.seguimientos || [];
-  const usuarios     = data.usuarios     || [];
+  var registros    = Array.isArray(data) ? data : (data.registros    || []);
+  var seguimientos = data.seguimientos || [];
+  var usuarios     = data.usuarios     || [];
 
   // Mapa dni → nombre completo del consolidador
-  const mapaUsuarios = {};
-  usuarios.forEach(u => {
+  var mapaUsuarios = {};
+  usuarios.forEach(function(u) {
     mapaUsuarios[String(u.dni)] = (u.nombre + " " + u.apellido).trim();
   });
 
   // Set de ids con seguimiento
-  const idsConSeguimiento = new Set(seguimientos.map(s => String(s.id_contacto)));
+  var idsConSeguimiento = new Set(seguimientos.map(function(s) { return String(s.id_contacto); }));
 
   // Agrupar por fecha
-  const grupos = {};
-  registros.forEach(r => {
-    const { fecha, hora } = splitFechaHora(r.registro);
-    if (!fecha) return;
-    if (!grupos[fecha]) grupos[fecha] = [];
-    grupos[fecha].push({
+  var grupos = {};
+  registros.forEach(function(r) {
+    var parts = splitFechaHora(r.registro);
+    if (!parts.fecha) return;
+    if (!grupos[parts.fecha]) grupos[parts.fecha] = [];
+    grupos[parts.fecha].push({
       id:        r.id,
-      nombre:    r.nombre,
-      apellido:  r.apellido,
-      hora:      hora,
+      nombre:    r.nombre    || "",
+      apellido:  r.apellido  || "",
+      hora:      parts.hora,
       decision:  r.decision,
       dataentry: r.dataentry
     });
   });
 
-  const fechasOrdenadas = Object.keys(grupos).sort((a, b) => b.localeCompare(a));
+  var fechasOrdenadas = Object.keys(grupos).sort(function(a, b) { return b.localeCompare(a); });
 
   document.getElementById("total-registros").textContent    = registros.length;
   document.getElementById("total-seguimientos").textContent = data.total_seguimientos || seguimientos.length;
 
-  const cont = document.getElementById("fechas-container");
+  var cont = document.getElementById("fechas-container");
 
   if (fechasOrdenadas.length === 0) {
     cont.innerHTML = '<div class="empty">Sin registros</div>';
   } else {
-    cont.innerHTML = fechasOrdenadas.map((fecha, idx) => {
-      const items = grupos[fecha].sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
+    cont.innerHTML = "";
 
-      const conActividad = items.filter(u => idsConSeguimiento.has(String(u.id))).length;
-      const sinActividad = items.length - conActividad;
+    fechasOrdenadas.forEach(function(fecha, idx) {
+      var items = grupos[fecha].sort(function(a, b) {
+        return (a.hora || "").localeCompare(b.hora || "");
+      });
 
-      const listaHtml = items.map(u => {
-        const decisionTxt = u.decision && u.decision.trim() !== "" ? u.decision : "Ninguna";
-        const tieneSeg    = idsConSeguimiento.has(String(u.id));
+      var conActividad = items.filter(function(u) { return idsConSeguimiento.has(String(u.id)); }).length;
+      var sinActividad = items.length - conActividad;
 
-        // Resolver nombre del consolidador desde el mapa de usuarios
-        const nombreConsolidador = u.dataentry
-          ? (mapaUsuarios[String(u.dataentry)] || "")
-          : "";
+      // ── Armar HTML de items ───────────────────────────────────────────────
+      var listaHtml = items.map(function(u) {
+        var decisionTxt        = u.decision && u.decision.trim() !== "" ? u.decision : "Ninguna";
+        var tieneSeg           = idsConSeguimiento.has(String(u.id));
+        var nombreConsolidador = u.dataentry ? (mapaUsuarios[String(u.dataentry)] || "") : "";
 
-        return `
-          <div class="contacto-item ${tieneSeg ? "con-seguimiento" : ""}">
-            <div class="contacto-info">
-              <div class="contacto-nombre">${u.apellido} ${u.nombre}</div>
-              <div class="contacto-hora">
-                ${nombreConsolidador ? "<b>Cons.:</b> " + nombreConsolidador : ""}
-                ${tieneSeg ? ' <span style="color:var(--green);font-size:10px;font-weight:700;margin-left:6px;">✔ Con seguimiento</span>' : ''}
-              </div>
-            </div>
-            <div class="contacto-decision ${claseDecision(u.decision)}">${decisionTxt}</div>
-          </div>`;
+        return (
+          '<div class="contacto-item' + (tieneSeg ? " con-seguimiento" : "") + '">' +
+            '<div class="contacto-info">' +
+              '<div class="contacto-nombre">' + esc(u.apellido) + ' ' + esc(u.nombre) + '</div>' +
+              '<div class="contacto-hora">' +
+                (nombreConsolidador ? '<b>Cons.:</b> ' + esc(nombreConsolidador) : '') +
+                (tieneSeg ? ' <span style="color:var(--green);font-size:10px;font-weight:700;margin-left:6px;">✔ Con seguimiento</span>' : '') +
+              '</div>' +
+            '</div>' +
+            '<div class="contacto-decision ' + claseDecision(u.decision) + '">' + esc(decisionTxt) + '</div>' +
+            '<button class="btn-lupa" ' +
+              'onclick="abrirDetalle(' + esc(u.id) + ',\'' + esc(u.nombre) + '\',\'' + esc(u.apellido) + '\')" ' +
+              'title="Ver detalle">' +
+              '<i class="ti ti-zoom-in"></i>' +
+            '</button>' +
+          '</div>'
+        );
       }).join("");
 
-      const openAttr = idx === 0 ? "open" : "";
+      // ── Armar el <details> ────────────────────────────────────────────────
+      var details = document.createElement("details");
+      details.className = "fecha-details";
+      if (idx === 0) details.setAttribute("open", "");
 
-      return `
-        <details class="fecha-details">
-          <summary class="fecha-summary">
-            <div class="fecha-summary-left">
-              <div class="fecha-icon"><i class="ti ti-calendar-event"></i></div>
-              <div class="fecha-info">
-                <div class="fecha-label">${formatFechaLarga(fecha)}</div>
-                <div class="fecha-sub">
-                  Registros: <strong style="color:var(--text)">${items.length}</strong>
-                  &nbsp;·&nbsp;
-                  Con seg: <strong style="color:var(--green)">${conActividad}</strong>
-                  &nbsp;·&nbsp;
-                  Sin seg: <strong style="color:var(--rose)">${sinActividad}</strong>
-                </div>
-              </div>
-            </div>
-            <div class="fecha-summary-right">
-              <span class="fecha-badge">${items.length}</span>
-              <i class="ti ti-chevron-down summary-arrow"></i>
-            </div>
-          </summary>
-          <div class="fecha-details-content">
-            ${listaHtml}
-          </div>
-        </details>`;
-    }).join("");
+      details.innerHTML =
+        '<summary class="fecha-summary">' +
+          '<div class="fecha-summary-left">' +
+            '<div class="fecha-icon"><i class="ti ti-calendar-event"></i></div>' +
+            '<div class="fecha-info">' +
+              '<div class="fecha-label">' + formatFechaLarga(fecha) + '</div>' +
+              '<div class="fecha-sub">' +
+                'Registros: <strong style="color:var(--text)">' + items.length + '</strong>' +
+                '&nbsp;·&nbsp;' +
+                'Con seg: <strong style="color:var(--green)">' + conActividad + '</strong>' +
+                '&nbsp;·&nbsp;' +
+                'Sin seg: <strong style="color:var(--rose)">' + sinActividad + '</strong>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="fecha-summary-right">' +
+            '<span class="fecha-badge">' + items.length + '</span>' +
+            '<i class="ti ti-chevron-down summary-arrow"></i>' +
+          '</div>' +
+        '</summary>' +
+        '<div class="fecha-details-content">' + listaHtml + '</div>';
+
+      cont.appendChild(details);
+    });
   }
 
   document.getElementById("loading").style.display   = "none";
   document.getElementById("contenido").style.display = "flex";
 }
 
-// ── INICIO ────────────────────────────────────────────────────────────────────
+/* ── INICIO ──────────────────────────────────────────────────────────────────── */
 cargarPanel();
 </script>
 
