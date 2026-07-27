@@ -355,6 +355,15 @@ var iconoCentral = crearIcono("#e8c354", 30);
 var iconoSede    = crearIcono("#7aaaf5", 15);
 var iconoUsuario = crearIcono("#e05c7a", 16);
 
+// Versiones "apagadas" (gris) para cuando hay una selección activa
+var iconoCentralGris = crearIcono("#4a4d57", 26);
+var iconoSedeGris    = crearIcono("#3d4048", 13);
+var iconoUsuarioGris = crearIcono("#3d4048", 13);
+
+// Versiones "activas" (verde, más grandes) para el usuario elegido y sus conexiones
+var iconoSedeActivo    = crearIcono("#3ecf8e", 20);
+var iconoUsuarioActivo = crearIcono("#3ecf8e", 21);
+
 // ── PUNTOS FIJOS ──────────────────────────────────────────────────────────────
 var puntosIglesia = [
   { lat: -31.3887, lng: -58.0183, tipo: "central", titulo: "JESUS ES REY", dir: "Las Heras 70, Concordia" }
@@ -376,6 +385,54 @@ puntosIglesia.forEach(function(p) {
 // Grupo que contiene las líneas actualmente visibles (solo las del usuario clickeado)
 var grupoLineasActivas = L.layerGroup().addTo(map);
 var usuarioSeleccionado = null;
+
+// Registro de todos los marcadores de usuarios y contactos, para poder
+// atenuarlos (gris) cuando se resalta la conexión de uno solo.
+// Cada item: { marker, iconoOriginal, iconoGris, dni (usuario) | dataentry (contacto) }
+var todosLosMarcadores = [];
+
+function resaltarConexiones(dni) {
+  grupoLineasActivas.clearLayers();
+
+  // Si se vuelve a clickear el mismo usuario ya seleccionado, se deselecciona
+  if (usuarioSeleccionado === dni) {
+    limpiarSeleccion();
+    return;
+  }
+
+  usuarioSeleccionado = dni;
+
+  // Resaltar en verde (y más grande) al usuario elegido y los contactos conectados a él;
+  // atenuar el resto en gris.
+  todosLosMarcadores.forEach(function(item) {
+    var esElUsuario  = item.dni === dni;
+    var esContactoDeEse = item.dataentry !== undefined && item.dataentry === dni;
+    if (esElUsuario || esContactoDeEse) {
+      item.marker.setIcon(item.iconoActivo);
+      item.marker.setZIndexOffset(1000);
+    } else {
+      item.marker.setIcon(item.iconoGris);
+      item.marker.setZIndexOffset(0);
+    }
+  });
+
+  (lineasPorUsuarioGlobal[dni] || []).forEach(function(linea) {
+    grupoLineasActivas.addLayer(linea);
+  });
+}
+
+function limpiarSeleccion() {
+  usuarioSeleccionado = null;
+  grupoLineasActivas.clearLayers();
+  todosLosMarcadores.forEach(function(item) {
+    item.marker.setIcon(item.iconoOriginal);
+    item.marker.setZIndexOffset(0);
+  });
+}
+
+// Se llena dentro de cargarDatos(); se referencia acá para que resaltarConexiones
+// pueda acceder a las líneas de cada usuario.
+var lineasPorUsuarioGlobal = {};
 
 // ── FETCH MAPA COMPLETO (USUARIOS Y ROQUELES) ─────────────────────────────────
 async function cargarDatos() {
@@ -401,7 +458,8 @@ async function cargarDatos() {
     // Diccionario para buscar coordenadas y datos de usuario por DNI
     var usuariosPorDni = {};
     // Diccionario para acumular las líneas asociadas a cada usuario (por DNI)
-    var lineasPorUsuario = {};
+    // (usamos la variable global para que resaltarConexiones() pueda leerla)
+    var lineasPorUsuario = lineasPorUsuarioGlobal;
 
     // 1. Inyectar Usuarios (Puntos Rosas)
     usuarios.forEach(function(u) {
@@ -421,25 +479,22 @@ async function cargarDatos() {
           );
         usuariosAgregados++;
 
+        todosLosMarcadores.push({
+          marker: marcadorUsuario,
+          iconoOriginal: iconoUsuario,
+          iconoGris: iconoUsuarioGris,
+          iconoActivo: iconoUsuarioActivo,
+          dni: u.dni || null
+        });
+
         // Guardamos coords indexadas por DNI para cruzar con troquel.dataentry
         if (u.dni) {
           usuariosPorDni[u.dni] = [latitude, longitude];
           lineasPorUsuario[u.dni] = [];
 
-          // Al hacer clic en el usuario, mostramos solo sus líneas de conexión
+          // Al hacer clic en el usuario, resaltamos sus conexiones y atenuamos el resto
           marcadorUsuario.on("click", function() {
-            grupoLineasActivas.clearLayers();
-
-            // Si se vuelve a clickear el mismo usuario, solo cerramos las líneas
-            if (usuarioSeleccionado === u.dni) {
-              usuarioSeleccionado = null;
-              return;
-            }
-
-            usuarioSeleccionado = u.dni;
-            (lineasPorUsuario[u.dni] || []).forEach(function(linea) {
-              grupoLineasActivas.addLayer(linea);
-            });
+            resaltarConexiones(u.dni);
           });
         }
       }
@@ -452,7 +507,7 @@ async function cargarDatos() {
 
       if (!isNaN(latitude) && !isNaN(longitude)) {
         var nombreContacto = r.nombre ? (r.nombre + " " + (r.apellido || "")) : (r.titulo || "Contacto");
-        L.marker([latitude, longitude], { icon: iconoSede })
+        var marcadorContacto = L.marker([latitude, longitude], { icon: iconoSede })
           .addTo(map)
           .bindPopup(
             '<div class="popup-title">' + nombreContacto + '</div>' +
@@ -465,6 +520,14 @@ async function cargarDatos() {
             '<div class="popup-badge sede">' + (r.tipo || "Contacto") + '</div>'
           );
         roquelesAgregados++;
+
+        todosLosMarcadores.push({
+          marker: marcadorContacto,
+          iconoOriginal: iconoSede,
+          iconoGris: iconoSedeGris,
+          iconoActivo: iconoSedeActivo,
+          dataentry: r.dataentry || null
+        });
 
         // Si el DNI de dataentry coincide con un usuario ubicado, preparamos la línea
         // (no se agrega al mapa todavía: se agrega recién al hacer clic en el usuario)
@@ -495,9 +558,9 @@ async function cargarDatos() {
 cargarDatos();
 
 // Al hacer clic en el mapa (fuera de un marcador), ocultamos las líneas activas
+// y restauramos el color original de todos los puntos.
 map.on("click", function() {
-  grupoLineasActivas.clearLayers();
-  usuarioSeleccionado = null;
+  limpiarSeleccion();
 });
 </script>
 
