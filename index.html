@@ -99,6 +99,21 @@
 
     <div class="dash-divider"></div>
 
+<!-- BANNER ALERTAS DE RIESGO (pegar después de dash-divider, antes de dash-grid) -->
+<button class="riesgo-alerta-banner" id="riesgo-banner" onclick="abrirModalRiesgo()">
+  <div class="riesgo-alerta-icon">
+    <i class="ti ti-alert-triangle"></i>
+  </div>
+  <div class="riesgo-alerta-text">
+    <p class="riesgo-alerta-title">Tenés <span id="riesgo-alerta-count">0</span> contacto(s) en riesgo</p>
+    <p class="riesgo-alerta-desc">Necesitan seguimiento</p>
+  </div>
+  <div class="action-arrow"><i class="ti ti-chevron-right"></i></div>
+</button>
+<!-- fin BANNER ALERTAS DE RIESGO -->
+
+
+
     <div class="dash-grid">
       <p class="dash-label">Mis acciones</p>
 
@@ -533,6 +548,31 @@
 </div>
 
 <!-- fin MODAL DETALLE CONTACTO -->
+
+<!-- MODAL ALERTAS DE RIESGO -->
+<div id="modal-riesgo" class="modal-detalle-overlay" onclick="handleRiesgoOverlay(event)">
+  <div class="modal-detalle">
+
+    <div class="modal-detalle-header">
+      <div class="modal-detalle-avatar">⚠️</div>
+      <div class="modal-detalle-titulo">
+        <p class="modal-detalle-nombre">Contactos en riesgo</p>
+        <p class="modal-detalle-sub">Necesitan seguimiento urgente</p>
+      </div>
+      <button class="modal-oracion-close" onclick="closeModalRiesgo()">✕</button>
+    </div>
+
+    <div class="modal-detalle-body" id="riesgo-container">
+      <div class="contactos-loading">
+        <div class="loading-spinner"></div>
+        <p>Cargando alertas...</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- fin MODAL ALERTAS DE RIESGO -->
+
 
 <!-- MODAL DELEGAR -->
 <div class="modal-overlay" id="modal-delegar" onclick="handleDelegarOverlay(event)">

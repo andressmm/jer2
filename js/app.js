@@ -129,6 +129,10 @@ if ((us.rol === "Pastor" || us.rol === "App")  && name === "dashboard") {
        limpiarFormTroquel(); 
     }
 
+if (name === "dashboard") {
+   actualizarBadgeRiesgo();
+}
+
 }
 
 
