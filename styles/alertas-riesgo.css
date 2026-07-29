@@ -1,0 +1,150 @@
+/* === ALERTAS DE CONTACTOS EN RIESGO ===
+   Pensado para pegarse al final de styles/style.css.
+   Reutiliza las variables ya definidas en :root (--surface, --rose, --accent2, etc). */
+
+.riesgo-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.riesgo-stat {
+  flex: 1;
+  min-width: 100px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  text-align: center;
+}
+
+.riesgo-stat strong {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.riesgo-stat span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.riesgo-stat.rose strong { color: var(--rose); }
+.riesgo-stat.gold strong { color: var(--accent2); }
+
+.riesgo-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.riesgo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--text-muted);
+  padding: 14px 16px;
+}
+
+.riesgo-item.nivel-sin_contacto,
+.riesgo-item.nivel-critico {
+  border-left-color: var(--rose);
+}
+
+.riesgo-item.nivel-atencion {
+  border-left-color: var(--accent2);
+}
+
+.riesgo-info strong {
+  color: var(--text);
+}
+
+.riesgo-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.riesgo-badge {
+  font-size: 0.72rem;
+  background: var(--surface2);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.riesgo-loc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.riesgo-btn {
+  background: var(--accent);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.riesgo-btn:hover {
+  background: var(--accent2);
+  color: var(--bg);
+}
+
+.riesgo-vacio,
+.riesgo-cargando {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px;
+}
+
+/* --- Banner clickeable en el dashboard --- */
+.riesgo-alerta-banner {
+  display: none; /* se muestra por JS solo si hay contactos en riesgo */
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rose);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 0 18px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.riesgo-alerta-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(224, 92, 122, 0.15);
+  color: var(--rose);
+  font-size: 20px;
+}
+
+.riesgo-alerta-text { flex: 1; }
+
+.riesgo-alerta-title {
+  color: var(--text);
+  font-weight: 600;
+  margin: 0;
+}
+
+.riesgo-alerta-title span { color: var(--rose); }
+
+.riesgo-alerta-desc {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 2px 0 0;
+}
