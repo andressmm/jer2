@@ -99,6 +99,8 @@ function renderAlertasRiesgo(json) {
   } else {
     json.data.forEach(function (item) {
       var telLimpio = (item.celular || "").replace(/\D/g, "");
+      var idContacto = item.id || item.id_contacto || item.id_troquel || "";
+      var nombreCompleto = ((item.nombre || "") + " " + (item.apellido || "")).trim();
 
       var badges = item.motivos.map(function (m) {
         return '<span class="riesgo-badge">' + escHtml(m) + '</span>';
@@ -111,9 +113,17 @@ function renderAlertasRiesgo(json) {
             '<div class="riesgo-badges">' + badges + '</div>' +
             (item.localidad ? '<span class="riesgo-loc">📍 ' + escHtml(item.localidad) + '</span>' : '') +
           '</div>' +
-          (telLimpio
-            ? '<a class="riesgo-btn" href="https://wa.me/' + telLimpio + '" target="_blank">Contactar</a>'
-            : '') +
+          '<div class="riesgo-acciones">' +
+            (telLimpio
+              ? '<a class="riesgo-btn" href="https://wa.me/' + telLimpio + '" target="_blank">Contactar</a>'
+              : '') +
+            (idContacto
+              ? '<button type="button" class="riesgo-btn riesgo-btn-seg" data-action="registrarSeg" ' +
+                  'data-id="' + escHtml(String(idContacto)) + '" ' +
+                  'data-nombre="' + escHtml(nombreCompleto).replace(/"/g, "&quot;") + '" ' +
+                  'data-seccion="whatsapp">Registrar acción</button>'
+              : '') +
+          '</div>' +
         '</div>';
     });
   }
@@ -121,3 +131,10 @@ function renderAlertasRiesgo(json) {
   html += '</div>';
   cont.innerHTML = html;
 }
+
+/* --- "Registrar acción" desde el modal de riesgo: abre el modal de seguimiento --- */
+document.addEventListener("click", function (e) {
+  var btn = e.target.closest("#riesgo-container [data-action='registrarSeg']");
+  if (!btn) return;
+  abrirModalSeguimiento(btn.dataset.id, btn.dataset.nombre, btn.dataset.seccion);
+});

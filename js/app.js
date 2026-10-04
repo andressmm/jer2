@@ -1392,6 +1392,9 @@ function guardarSeguimiento() {
     if (result.success) {
       closeSeguimiento();
       showToast("✅ Acción registrada", true);
+      var mRiesgo = document.getElementById("modal-riesgo");
+      if (mRiesgo && mRiesgo.classList.contains("open") && typeof cargarAlertasRiesgo === "function") cargarAlertasRiesgo(true);
+      if (typeof actualizarBadgeRiesgo === "function") actualizarBadgeRiesgo();
     } else {
       showToast("⚠️ " + result.message);
     }

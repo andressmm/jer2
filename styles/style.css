@@ -1523,6 +1523,27 @@ box-shadow: 0 0 10px 3px rgba(67, 223, 10, 0.804);
   color: var(--bg);
 }
 
+/* Botones apilados: Contactar arriba, Registrar acción abajo */
+.riesgo-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.riesgo-acciones .riesgo-btn {
+  text-align: center;
+}
+
+.riesgo-btn-seg {
+  background: transparent;
+  border: 1px solid var(--accent2);
+  color: var(--accent2);
+  font-family: inherit;
+  cursor: pointer;
+}
+
 .riesgo-vacio,
 .riesgo-cargando {
   color: var(--text-muted);
