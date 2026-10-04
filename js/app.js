@@ -700,8 +700,13 @@ function guardarOracion() {
 /*---------------------------------------------------------------------*/
 /* === MODAL DETALLE === */
 
+var detalleContactoId = null;
+
 function showDetalle(id) {
   //console.log(id);
+  detalleContactoId = id;
+  var delBtn = document.getElementById("detalle-delete-btn");
+  if (delBtn) delBtn.disabled = false;
   document.getElementById("modal-detalle").classList.add("open");
   document.getElementById("detalle-nombre").textContent    = "Cargando...";
   document.getElementById("detalle-avatar").textContent    = "--";
@@ -783,6 +788,58 @@ function fila(label, value) {
 
 function closeDetalle() {
   document.getElementById("modal-detalle").classList.remove("open");
+}
+
+function eliminarContacto() {
+  if (!detalleContactoId) return;
+
+  var nombre = document.getElementById("detalle-nombre").textContent;
+  if (!confirm("¿Eliminar a " + nombre + "?\n\nSe borrarán también sus oraciones y seguimientos. Esta acción no se puede deshacer.")) return;
+
+  var btn        = document.getElementById("detalle-delete-btn");
+  var idEliminar = detalleContactoId;
+  btn.disabled   = true;
+
+  var formData = new FormData();
+  formData.append("id_contacto", idEliminar);
+  formData.append("dni_usuario", getUser()?.dni || "");
+
+  fetch(BASE_URL + "/eliminarcontacto.php", {
+    method: "POST",
+    body:   formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success) {
+      closeDetalle();
+      showToast("🗑️ Contacto eliminado", true);
+      quitarContactoDeLista(idEliminar);
+      if (typeof actualizarBadgeRiesgo === "function") actualizarBadgeRiesgo();
+    } else {
+      showToast("⚠️ " + (result.message || "No se pudo eliminar"));
+      btn.disabled = false;
+    }
+  })
+  .catch(function() {
+    showToast("❌ Error de conexión");
+    btn.disabled = false;
+  });
+}
+
+function quitarContactoDeLista(id) {
+  var lupa = document.querySelector('#contactos-list [data-action="verDetalle"][data-id="' + id + '"]');
+  var item = lupa ? lupa.closest(".contact-item") : null;
+  if (item) item.remove();
+
+  var restantes = document.querySelectorAll("#contactos-list .contact-item").length;
+  if (restantes === 0) {
+    document.getElementById("contactos-list").style.display  = "none";
+    document.getElementById("contactos-empty").style.display = "flex";
+    document.getElementById("contactos-subtitle").textContent = "Sin contactos";
+  } else {
+    document.getElementById("contactos-subtitle").textContent =
+      restantes + (restantes === 1 ? " contacto" : " contactos");
+  }
 }
 
 function handleDetalleOverlay(e) {
