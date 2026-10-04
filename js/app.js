@@ -700,13 +700,35 @@ function guardarOracion() {
 /*---------------------------------------------------------------------*/
 /* === MODAL DETALLE === */
 
-var detalleContactoId = null;
+var detalleContactoId   = null;
+var detalleContactoData = null;
+var detalleEditando     = false;
+
+var DETALLE_OPC = {
+  contacto: ["WhatsApp", "Llamada"],
+  siNo:     ["Sí", "No"],
+  decision: ["Ninguna", "Decisión de fe", "Reconciliación"],
+  edad:     ["Adulto", "Joven", "Adolescente", "Niño"]
+};
+
+function normTxt(s) {
+  return String(s || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function escAttr(s) {
+  return escHtml(s).replace(/"/g, "&quot;");
+}
 
 function showDetalle(id) {
-  //console.log(id);
-  detalleContactoId = id;
-  var delBtn = document.getElementById("detalle-delete-btn");
-  if (delBtn) delBtn.disabled = false;
+  detalleContactoId   = id;
+  detalleContactoData = null;
+  setModoEdicion(false);
+
+  var delBtn  = document.getElementById("detalle-delete-btn");
+  var editBtn = document.getElementById("detalle-edit-btn");
+  if (delBtn)  delBtn.disabled  = false;
+  if (editBtn) editBtn.disabled = true;
+
   document.getElementById("modal-detalle").classList.add("open");
   document.getElementById("detalle-nombre").textContent    = "Cargando...";
   document.getElementById("detalle-avatar").textContent    = "--";
@@ -721,62 +743,243 @@ function showDetalle(id) {
     })
     .then(function(d) {
       if (!d.success) throw new Error(d.message || "Sin datos");
-
-      let c        = d.data;
-      let nombre   = (c.nombre   || "").trim();
-      let apellido = (c.apellido || "").trim();
-      let decision = (c.decision || "").trim();
-
-      let fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
-      let initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
-
-      document.getElementById("detalle-avatar").textContent    = initials;
-      document.getElementById("detalle-nombre").textContent    = fullname;
-      document.getElementById("detalle-localidad").textContent = c.localidad || "";
-
-      var oracionBadge = (c.oracion === "si")
-        ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-        : '<span class="detalle-badge badge-no">No</span>';
-
-
-        var visitaBadge = (c.quierevisita === "Sí" || c.quierevisita === "Si" || c.quierevisita === "si")
-  ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-  : '<span class="detalle-badge badge-no">No</span>';
-
-      var casadepazBadge = (c.casadepaz === "Sí" || c.casadepaz === "Si" || c.casadepaz === "si")
-  ? '<span class="detalle-badge badge-si">✔ Sí</span>'
-  : '<span class="detalle-badge badge-no">No</span>';
-
-      document.getElementById("detalle-body").innerHTML =
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Contacto</p>' +
-          fila("Celular",   c.celular  || "—") +
-          fila("Vía",       c.contacto || "—") +
-        '</div>' +
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Ubicación</p>' +
-          fila("Dirección", c.direccion  || "—") +
-          fila("Barrio",    c.barrio     || "—") +
-          fila("Localidad", c.localidad  || "—") +
-          fila("Provincia", c.provincia  || "—") +
-         
-  '<div class="detalle-row"><span class="detalle-label">¿Quiere visita?</span><span class="detalle-value">' + visitaBadge + '</span></div>' +
-
-  '<div class="detalle-row"><span class="detalle-label">¿Casa de paz?</span><span class="detalle-value">' + casadepazBadge + '</span></div>' +
-'</div>' +
-        '</div>' +
-        '<div class="detalle-section">' +
-          '<p class="detalle-section-title">Otros</p>' +
-          fila("Edad/Tipo", c.edad || "—") +
-          fila("Decisión", c.decision || "—") +
-          '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value">' + oracionBadge + '</span></div>' +
-          fila("Obs.",      c.observaciones || "—") +
-        '</div>';
+      detalleContactoData = d.data;
+      renderDetalle(d.data);
+      if (editBtn) editBtn.disabled = false;
     })
     .catch(function(err) {
       document.getElementById("detalle-body").innerHTML =
-        '<div class="contactos-empty"><p style="color:var(--rose)">Error al cargar</p><span>' + err.message + '</span></div>';
+        '<div class="contactos-empty"><p style="color:var(--rose)">Error al cargar</p><span>' + escHtml(err.message) + '</span></div>';
     });
+}
+
+function renderDetalle(c) {
+  var nombre   = (c.nombre   || "").trim();
+  var apellido = (c.apellido || "").trim();
+
+  var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
+  var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
+
+  document.getElementById("detalle-avatar").textContent    = initials;
+  document.getElementById("detalle-nombre").textContent    = fullname;
+  document.getElementById("detalle-localidad").textContent = c.localidad || "";
+
+  var badgeSi = '<span class="detalle-badge badge-si">✔ Sí</span>';
+  var badgeNo = '<span class="detalle-badge badge-no">No</span>';
+
+  var oracionBadge   = (c.oracion === "si") ? badgeSi : badgeNo;
+  var visitaBadge    = (normTxt(c.quierevisita) === "si") ? badgeSi : badgeNo;
+  var casadepazBadge = (normTxt(c.casadepaz)    === "si") ? badgeSi : badgeNo;
+
+  document.getElementById("detalle-body").innerHTML =
+    '<div class="detalle-section">' +
+      '<p class="detalle-section-title">Contacto</p>' +
+      fila("Celular",   c.celular  || "—") +
+      fila("Vía",       c.contacto || "—") +
+    '</div>' +
+    '<div class="detalle-section">' +
+      '<p class="detalle-section-title">Ubicación</p>' +
+      fila("Dirección", c.direccion  || "—") +
+      fila("Barrio",    c.barrio     || "—") +
+      fila("Localidad", c.localidad  || "—") +
+      fila("Provincia", c.provincia  || "—") +
+      '<div class="detalle-row"><span class="detalle-label">¿Quiere visita?</span><span class="detalle-value">' + visitaBadge + '</span></div>' +
+      '<div class="detalle-row"><span class="detalle-label">¿Casa de paz?</span><span class="detalle-value">' + casadepazBadge + '</span></div>' +
+    '</div>' +
+    '<div class="detalle-section">' +
+      '<p class="detalle-section-title">Otros</p>' +
+      fila("Edad/Tipo", c.edad || "—") +
+      fila("Decisión", c.decision || "—") +
+      '<div class="detalle-row"><span class="detalle-label">Oración</span><span class="detalle-value">' + oracionBadge + '</span></div>' +
+      fila("Obs.",      c.observaciones || "—") +
+    '</div>';
+}
+
+/* === EDITAR CONTACTO === */
+
+function setModoEdicion(on) {
+  detalleEditando = on;
+  ["detalle-edit-btn", "detalle-delete-btn"].forEach(function(id) {
+    var b = document.getElementById(id);
+    if (b) b.style.display = on ? "none" : "";
+  });
+  var sub = document.getElementById("detalle-localidad");
+  if (on) sub.textContent = "Editando datos";
+  else if (detalleContactoData) sub.textContent = detalleContactoData.localidad || "";
+}
+
+function editInput(id, label, valor, obligatorio, tipo) {
+  return '<div class="field-row">' +
+    '<span class="field-label">' + label +
+      (obligatorio ? ' <span style="color:var(--rose)">*</span>' : '') + '</span>' +
+    '<input class="field-input" id="' + id + '" type="' + (tipo || "text") + '"' +
+      (tipo === "tel" ? ' inputmode="numeric"' : '') +
+      ' value="' + escAttr(valor || "") + '">' +
+  '</div>';
+}
+
+function editToggle(id, opciones, actual, esContacto) {
+  var a = normTxt(actual);
+  var botones = opciones.map(function(o) {
+    var activo = a !== "" && normTxt(o) === a;
+    return '<button type="button" class="' + (esContacto ? 'contact-btn' : 'toggle-btn') + (activo ? ' active' : '') + '" ' +
+      'onclick="' + (esContacto ? 'toggleContact(this)' : 'selectTipo(this)') + '">' + o + '</button>';
+  }).join("");
+  return '<div class="' + (esContacto ? 'contact-toggle' : 'toggle-group') + '" id="' + id + '">' + botones + '</div>';
+}
+
+function editarContacto() {
+  var c = detalleContactoData;
+  if (!c) return;
+
+  setModoEdicion(true);
+
+  document.getElementById("detalle-body").innerHTML =
+    '<div class="form-section detalle-edit-section">' +
+      '<p class="form-section-title">Datos personales</p>' +
+      editInput("e-nombre",   "Nombre",   c.nombre,   true) +
+      editInput("e-apellido", "Apellido", c.apellido, true) +
+      editInput("e-celular",  "Celular",  c.celular,  true, "tel") +
+      '<div class="field-row"><span class="field-label">Contacto</span>' +
+        editToggle("e-contacto", DETALLE_OPC.contacto, c.contacto, true) +
+      '</div>' +
+    '</div>' +
+    '<div class="form-section detalle-edit-section">' +
+      '<p class="form-section-title">Ubicación</p>' +
+      editInput("e-direccion", "Dirección", c.direccion, true) +
+      editInput("e-barrio",    "Barrio",    c.barrio) +
+      editInput("e-localidad", "Localidad", c.localidad, true) +
+      editInput("e-provincia", "Provincia", c.provincia) +
+      '<div class="field-row"><span class="field-label-wide">¿Quiere visita?</span>' +
+        editToggle("e-visita", DETALLE_OPC.siNo, c.quierevisita) +
+      '</div>' +
+      '<div class="field-row"><span class="field-label-wide">¿Casa de paz?</span>' +
+        editToggle("e-casadepaz", DETALLE_OPC.siNo, c.casadepaz) +
+      '</div>' +
+    '</div>' +
+    '<div class="form-section detalle-edit-section">' +
+      '<p class="form-section-title">Decisión</p>' +
+      '<div class="field-row">' + editToggle("e-decision", DETALLE_OPC.decision, c.decision) + '</div>' +
+    '</div>' +
+    '<div class="form-section detalle-edit-section">' +
+      '<p class="form-section-title">Tipo de persona</p>' +
+      '<div class="field-row">' + editToggle("e-edad", DETALLE_OPC.edad, c.edad) + '</div>' +
+    '</div>' +
+    '<div class="form-section detalle-edit-section">' +
+      '<p class="form-section-title">Observaciones</p>' +
+      '<div class="field-row" style="align-items:flex-start;">' +
+        '<textarea class="field-textarea" id="e-observaciones" placeholder="Anotá cualquier dato adicional relevante...">' +
+          escHtml(c.observaciones || "") + '</textarea>' +
+      '</div>' +
+    '</div>' +
+    '<div class="detalle-edit-actions">' +
+      '<button type="button" class="detalle-edit-cancel" onclick="cancelarEdicion()">Cancelar</button>' +
+      '<button type="button" class="detalle-edit-save" id="detalle-save-btn" onclick="guardarEdicion()">Guardar cambios</button>' +
+    '</div>';
+
+  document.getElementById("detalle-body").scrollTop = 0;
+}
+
+function cancelarEdicion() {
+  setModoEdicion(false);
+  if (detalleContactoData) renderDetalle(detalleContactoData);
+}
+
+function guardarEdicion() {
+  var c = detalleContactoData;
+  if (!c) return;
+
+  var body = document.getElementById("detalle-body");
+  body.querySelectorAll(".field-input.error").forEach(function(el) { el.classList.remove("error"); });
+
+  var obligatorios = [
+    ["e-nombre", "Nombre"], ["e-apellido", "Apellido"], ["e-celular", "Celular"],
+    ["e-direccion", "Dirección"], ["e-localidad", "Localidad"]
+  ];
+  var faltantes = [];
+  obligatorios.forEach(function(o) {
+    var el = document.getElementById(o[0]);
+    if (!el.value.trim()) {
+      faltantes.push(o[1]);
+      el.classList.add("error");
+      el.addEventListener("input", function() { el.classList.remove("error"); }, { once: true });
+    }
+  });
+  if (faltantes.length > 0) {
+    showToast("Completá: " + faltantes.join(", "));
+    var primero = body.querySelector(".field-input.error");
+    if (primero) primero.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  function val(id) { return document.getElementById(id).value.trim(); }
+  // Si no hay opción marcada (dato viejo con otro formato) se conserva el valor original
+  function tog(id, original) {
+    var b = document.querySelector("#" + id + " .active");
+    return b ? b.textContent.trim() : (original || "");
+  }
+
+  var formData = new FormData();
+  formData.append("id_contacto",   detalleContactoId);
+  formData.append("dni_usuario",   getUser()?.dni || "");
+  formData.append("nombre",        val("e-nombre"));
+  formData.append("apellido",      val("e-apellido"));
+  formData.append("celular",       val("e-celular"));
+  formData.append("contacto",      tog("e-contacto",  c.contacto));
+  formData.append("direccion",     val("e-direccion"));
+  formData.append("barrio",        val("e-barrio"));
+  formData.append("localidad",     val("e-localidad"));
+  formData.append("provincia",     val("e-provincia"));
+  formData.append("quierevisita",  tog("e-visita",    c.quierevisita));
+  formData.append("casadepaz",     tog("e-casadepaz", c.casadepaz));
+  formData.append("decision",      tog("e-decision",  c.decision));
+  formData.append("edad",          tog("e-edad",      c.edad));
+  formData.append("observaciones", document.getElementById("e-observaciones").value.trim());
+
+  var btn = document.getElementById("detalle-save-btn");
+  btn.disabled    = true;
+  btn.textContent = "⌛ Guardando...";
+
+  fetch(BASE_URL + "/editarcontacto.php", {
+    method: "POST",
+    body:   formData
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(result) {
+    if (result.success) {
+      detalleContactoData = Object.assign({}, c, result.data || {});
+      setModoEdicion(false);
+      renderDetalle(detalleContactoData);
+      actualizarContactoEnLista(detalleContactoId, detalleContactoData.nombre, detalleContactoData.apellido);
+      showToast("✅ Cambios guardados", true);
+    } else {
+      showToast("⚠️ " + (result.message || "No se pudo guardar"));
+      btn.disabled    = false;
+      btn.textContent = "Guardar cambios";
+    }
+  })
+  .catch(function() {
+    showToast("❌ Error de conexión");
+    btn.disabled    = false;
+    btn.textContent = "Guardar cambios";
+  });
+}
+
+function actualizarContactoEnLista(id, nombre, apellido) {
+  nombre   = (nombre   || "").trim();
+  apellido = (apellido || "").trim();
+  var lupa = document.querySelector('#contactos-list [data-action="verDetalle"][data-id="' + id + '"]');
+  var item = lupa ? lupa.closest(".contact-item") : null;
+  if (!item) return;
+
+  var fullname = [nombre, apellido].filter(Boolean).join(" ") || "Sin nombre";
+  var initials = ((nombre[0] || "") + (apellido[0] || "")).toUpperCase() || "?";
+
+  var elNombre = item.querySelector(".contact-fullname");
+  var elAvatar = item.querySelector(".contact-avatar");
+  if (elNombre) elNombre.textContent = fullname;
+  if (elAvatar) elAvatar.textContent = initials;
+  item.querySelectorAll("[data-nombre]").forEach(function(b) { b.dataset.nombre = fullname; });
 }
 
 function fila(label, value) {
@@ -788,6 +991,7 @@ function fila(label, value) {
 
 function closeDetalle() {
   document.getElementById("modal-detalle").classList.remove("open");
+  setModoEdicion(false);
 }
 
 function eliminarContacto() {
@@ -843,7 +1047,7 @@ function quitarContactoDeLista(id) {
 }
 
 function handleDetalleOverlay(e) {
-  if (e.target === document.getElementById("modal-detalle")) closeDetalle();
+  if (e.target === document.getElementById("modal-detalle") && !detalleEditando) closeDetalle();
 }
 
 /*---------------------------------------------------------------------*/
